@@ -2421,6 +2421,19 @@ fun BottomSheetPlayer(
                   label = "rotation"
                 )
 
+              val playPulseTransition = rememberInfiniteTransition(label = "playPulse")
+              val playPulseScale by
+                playPulseTransition.animateFloat(
+                  initialValue = 1f,
+                  targetValue = if (effectiveIsPlaying) 1.05f else 1f,
+                  animationSpec =
+                    infiniteRepeatable(
+                      animation = tween(1200, easing = LinearEasing),
+                      repeatMode = RepeatMode.Reverse
+                    ),
+                  label = "playPulseScale"
+                )
+
               FilledIconButton(
                 onClick = {
                   if (isListenTogetherGuest) {
@@ -2449,10 +2462,27 @@ fun BottomSheetPlayer(
                     contentColor = iconButtonColor,
                   ),
                 modifier =
-                  Modifier.size(84.dp).graphicsLayer {
-                    scaleX = playPauseScale
-                    scaleY = playPauseScale
-                  }
+                  Modifier.size(84.dp)
+                    .graphicsLayer {
+                      val dynamicScale = playPauseScale * (if (effectiveIsPlaying && !isPlayPausePressed) playPulseScale else 1f)
+                      scaleX = dynamicScale
+                      scaleY = dynamicScale
+                    }
+                    .then(
+                      if (effectiveIsPlaying) {
+                        Modifier.border(
+                          width = 2.dp,
+                          brush = Brush.sweepGradient(
+                            listOf(
+                              MaterialTheme.colorScheme.primary,
+                              MaterialTheme.colorScheme.tertiary,
+                              MaterialTheme.colorScheme.primary
+                            )
+                          ),
+                          shape = if (cookieIndent > 0f) WavyShape(9, cookieIndent, rotation) else CircleShape
+                        )
+                      } else Modifier
+                    )
               ) {
                 Row(
                   verticalAlignment = Alignment.CenterVertically,

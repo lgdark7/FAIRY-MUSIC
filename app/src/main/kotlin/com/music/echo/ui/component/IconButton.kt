@@ -1,6 +1,8 @@
 package echo.music.iad1tya.ui.component
 
 import androidx.annotation.DrawableRes
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.Indication
@@ -8,6 +10,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.shape.CircleShape
@@ -19,6 +22,7 @@ import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,9 +30,28 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
+
+@Composable
+fun Modifier.bouncyPress(
+  scaleDown: Float = 0.90f,
+  interactionSource: MutableInteractionSource = remember { MutableInteractionSource() }
+): Modifier {
+  val isPressed by interactionSource.collectIsPressedAsState()
+  val scale by
+    animateFloatAsState(
+      targetValue = if (isPressed) scaleDown else 1f,
+      animationSpec = spring(dampingRatio = 0.6f, stiffness = 600f),
+      label = "BouncyPressScale"
+    )
+  return this.graphicsLayer {
+    scaleX = scale
+    scaleY = scale
+  }
+}
 
 @Composable
 fun ResizableIconButton(
@@ -39,15 +62,28 @@ fun ResizableIconButton(
   indication: Indication? = null,
   onClick: () -> Unit = {},
 ) {
+  val interactionSource = remember { MutableInteractionSource() }
+  val isPressed by interactionSource.collectIsPressedAsState()
+  val scale by
+    animateFloatAsState(
+      targetValue = if (isPressed && enabled) 0.86f else 1f,
+      animationSpec = spring(dampingRatio = 0.6f, stiffness = 600f),
+      label = "ResizableIconButtonBounce"
+    )
+
   Image(
     painter = painterResource(icon),
     contentDescription = null,
     colorFilter = ColorFilter.tint(color),
     modifier =
       modifier
+        .graphicsLayer {
+          scaleX = scale
+          scaleY = scale
+        }
         .clickable(
           indication = indication ?: ripple(bounded = false),
-          interactionSource = remember { MutableInteractionSource() },
+          interactionSource = interactionSource,
           enabled = enabled,
           onClick = onClick,
         )
@@ -66,9 +102,21 @@ fun IconButton(
   interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
   content: @Composable () -> Unit,
 ) {
+  val isPressed by interactionSource.collectIsPressedAsState()
+  val scale by
+    animateFloatAsState(
+      targetValue = if (isPressed && enabled) 0.86f else 1f,
+      animationSpec = spring(dampingRatio = 0.6f, stiffness = 600f),
+      label = "IconButtonBounce"
+    )
+
   Box(
     modifier =
       modifier
+        .graphicsLayer {
+          scaleX = scale
+          scaleY = scale
+        }
         .minimumInteractiveComponentSize()
         .sizeIn(minWidth = 48.dp, minHeight = 48.dp)
         .clip(CircleShape)

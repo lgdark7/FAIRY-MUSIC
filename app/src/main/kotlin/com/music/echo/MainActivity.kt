@@ -17,12 +17,17 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.CubicBezierEasing
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
@@ -1085,27 +1090,45 @@ class MainActivity : ComponentActivity() {
                   TopAppBar(
                     title = {
                       if (navBackStackEntry?.destination?.route == Screens.Home.route) {
-                        Column(verticalArrangement = Arrangement.Center) {
-                          Text(
-                            text = "FAIRY MUSIC",
-                            style =
-                              MaterialTheme.typography.titleLarge.copy(
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 20.sp
-                              ),
-                            maxLines = 1,
-                          )
-                          Text(
-                            text = "Dev By D4RK",
-                            style =
-                              MaterialTheme.typography.labelSmall.copy(
-                                fontWeight = FontWeight.SemiBold,
-                                color = MaterialTheme.colorScheme.primary,
-                                fontSize = 11.sp,
-                                letterSpacing = 0.5.sp
-                              ),
-                            maxLines = 1,
-                          )
+                        Row(
+                          verticalAlignment = Alignment.CenterVertically,
+                          horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                          Box(
+                            modifier =
+                              Modifier.size(38.dp)
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)),
+                            contentAlignment = Alignment.Center
+                          ) {
+                            Image(
+                              painter = painterResource(R.drawable.ic_launcher_nobg),
+                              contentDescription = null,
+                              modifier = Modifier.size(32.dp)
+                            )
+                          }
+                          Column(verticalArrangement = Arrangement.Center) {
+                            Text(
+                              text = "FAIRY MUSIC",
+                              style =
+                                MaterialTheme.typography.titleLarge.copy(
+                                  fontWeight = FontWeight.Bold,
+                                  fontSize = 20.sp
+                                ),
+                              maxLines = 1,
+                            )
+                            Text(
+                              text = "Dev By D4RK",
+                              style =
+                                MaterialTheme.typography.labelSmall.copy(
+                                  fontWeight = FontWeight.SemiBold,
+                                  color = MaterialTheme.colorScheme.primary,
+                                  fontSize = 11.sp,
+                                  letterSpacing = 0.5.sp
+                                ),
+                              maxLines = 1,
+                            )
+                          }
                         }
                       } else {
                         Text(
@@ -1441,14 +1464,12 @@ class MainActivity : ComponentActivity() {
                     val previousRouteIndex =
                       navigationItems.indexOfFirst { it.route == initialState.destination.route }
 
-                    if (currentRouteIndex == -1 || currentRouteIndex > previousRouteIndex)
-                      slideInHorizontally(animationSpec = tween(400, easing = EmphasizedEasing)) {
-                        it / 8
-                      } + fadeIn(tween(400, easing = EmphasizedEasing))
-                    else
-                      slideInHorizontally(animationSpec = tween(400, easing = EmphasizedEasing)) {
-                        -it / 8
-                      } + fadeIn(tween(400, easing = EmphasizedEasing))
+                    val forward = currentRouteIndex == -1 || currentRouteIndex > previousRouteIndex
+                    slideInHorizontally(
+                      animationSpec = spring(dampingRatio = 0.85f, stiffness = Spring.StiffnessMediumLow)
+                    ) { if (forward) it / 6 else -it / 6 } +
+                    fadeIn(animationSpec = spring(dampingRatio = 0.9f, stiffness = Spring.StiffnessMediumLow)) +
+                    scaleIn(initialScale = 0.96f, animationSpec = spring(dampingRatio = 0.85f, stiffness = Spring.StiffnessMediumLow))
                   },
                   exitTransition = {
                     val currentRouteIndex =
@@ -1456,14 +1477,12 @@ class MainActivity : ComponentActivity() {
                     val targetRouteIndex =
                       navigationItems.indexOfFirst { it.route == targetState.destination.route }
 
-                    if (targetRouteIndex == -1 || targetRouteIndex > currentRouteIndex)
-                      slideOutHorizontally(animationSpec = tween(400, easing = EmphasizedEasing)) {
-                        -it / 8
-                      } + fadeOut(tween(400, easing = EmphasizedEasing))
-                    else
-                      slideOutHorizontally(animationSpec = tween(400, easing = EmphasizedEasing)) {
-                        it / 8
-                      } + fadeOut(tween(400, easing = EmphasizedEasing))
+                    val forward = targetRouteIndex == -1 || targetRouteIndex > currentRouteIndex
+                    slideOutHorizontally(
+                      animationSpec = spring(dampingRatio = 0.85f, stiffness = Spring.StiffnessMediumLow)
+                    ) { if (forward) -it / 6 else it / 6 } +
+                    fadeOut(animationSpec = spring(dampingRatio = 0.9f, stiffness = Spring.StiffnessMediumLow)) +
+                    scaleOut(targetScale = 0.98f, animationSpec = spring(dampingRatio = 0.85f, stiffness = Spring.StiffnessMediumLow))
                   },
                   popEnterTransition = {
                     val currentRouteIndex =
@@ -1471,14 +1490,12 @@ class MainActivity : ComponentActivity() {
                     val previousRouteIndex =
                       navigationItems.indexOfFirst { it.route == initialState.destination.route }
 
-                    if (previousRouteIndex != -1 && previousRouteIndex < currentRouteIndex)
-                      slideInHorizontally(animationSpec = tween(400, easing = EmphasizedEasing)) {
-                        it / 8
-                      } + fadeIn(tween(400, easing = EmphasizedEasing))
-                    else
-                      slideInHorizontally(animationSpec = tween(400, easing = EmphasizedEasing)) {
-                        -it / 8
-                      } + fadeIn(tween(400, easing = EmphasizedEasing))
+                    val forward = previousRouteIndex != -1 && previousRouteIndex < currentRouteIndex
+                    slideInHorizontally(
+                      animationSpec = spring(dampingRatio = 0.85f, stiffness = Spring.StiffnessMediumLow)
+                    ) { if (forward) it / 6 else -it / 6 } +
+                    fadeIn(animationSpec = spring(dampingRatio = 0.9f, stiffness = Spring.StiffnessMediumLow)) +
+                    scaleIn(initialScale = 0.96f, animationSpec = spring(dampingRatio = 0.85f, stiffness = Spring.StiffnessMediumLow))
                   },
                   popExitTransition = {
                     val currentRouteIndex =
@@ -1486,14 +1503,12 @@ class MainActivity : ComponentActivity() {
                     val targetRouteIndex =
                       navigationItems.indexOfFirst { it.route == targetState.destination.route }
 
-                    if (currentRouteIndex != -1 && currentRouteIndex < targetRouteIndex)
-                      slideOutHorizontally(animationSpec = tween(400, easing = EmphasizedEasing)) {
-                        -it / 8
-                      } + fadeOut(tween(400, easing = EmphasizedEasing))
-                    else
-                      slideOutHorizontally(animationSpec = tween(400, easing = EmphasizedEasing)) {
-                        it / 8
-                      } + fadeOut(tween(400, easing = EmphasizedEasing))
+                    val forward = currentRouteIndex != -1 && currentRouteIndex < targetRouteIndex
+                    slideOutHorizontally(
+                      animationSpec = spring(dampingRatio = 0.85f, stiffness = Spring.StiffnessMediumLow)
+                    ) { if (forward) -it / 6 else it / 6 } +
+                    fadeOut(animationSpec = spring(dampingRatio = 0.9f, stiffness = Spring.StiffnessMediumLow)) +
+                    scaleOut(targetScale = 0.98f, animationSpec = spring(dampingRatio = 0.85f, stiffness = Spring.StiffnessMediumLow))
                   },
                   modifier = Modifier.layerBackdrop(appBackdrop).nestedScroll(topAppBarScrollBehavior.nestedScrollConnection)
                 ) {
