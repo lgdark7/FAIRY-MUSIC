@@ -57,26 +57,19 @@ fun WelcomeDialog(onDismissRequest: () -> Unit) {
         // Main Header
         WelcomeAppCard()
 
-        WelcomeSectionCard(title = "Follow Developer") {
+        WelcomeSectionCard(title = "Developer") {
           WelcomeActionRow(
             icon = painterResource(R.drawable.ic_instagram_new),
             title = "Instagram",
-            subtitle = "@iad1tya",
-            onClick = { uriHandler.openUri("https://instagram.com/iad1tya") }
-          )
-          WelcomeDivider()
-          WelcomeActionRow(
-            icon = painterResource(R.drawable.ic_x_new),
-            title = "X (Twitter)",
-            subtitle = "@xad1tya",
-            onClick = { uriHandler.openUri("https://x.com/xad1tya") }
+            subtitle = "@lg_dark_7",
+            onClick = { uriHandler.openUri("https://www.instagram.com/lg_dark_7") }
           )
           WelcomeDivider()
           WelcomeActionRow(
             icon = painterResource(R.drawable.github),
             title = "GitHub",
-            subtitle = "iad1tya",
-            onClick = { uriHandler.openUri("https://github.com/iad1tya") }
+            subtitle = "lgdark7",
+            onClick = { uriHandler.openUri("https://github.com/lgdark7") }
           )
         }
 
@@ -149,8 +142,7 @@ private fun WelcomeAppCard() {
         contentDescription = null,
         modifier =
           Modifier.size(100.dp)
-            .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.surfaceContainer),
+            .clip(RoundedCornerShape(22.dp))
       )
       Spacer(Modifier.height(4.dp))
       Text(

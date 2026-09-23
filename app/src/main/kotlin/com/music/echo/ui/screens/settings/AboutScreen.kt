@@ -166,9 +166,15 @@ fun AboutScreen(
 
       item {
         Material3SettingsGroup(
-          title = "Links",
+          title = "Developer & Links",
           items =
             listOf(
+              Material3SettingsItem(
+                icon = painterResource(R.drawable.ic_instagram_new),
+                title = { Text("Developer") },
+                description = { Text("@lg_dark_7 (Benny)") },
+                onClick = { uriHandler.openUri("https://www.instagram.com/lg_dark_7") }
+              ),
               Material3SettingsItem(
                 icon = painterResource(R.drawable.github),
                 title = { Text("GitHub") },
@@ -184,31 +190,6 @@ fun AboutScreen(
             )
         )
       }
-
-      /* item {
-          AboutSectionCard(title = "App") {
-              AboutActionRow(
-                  icon = painterResource(R.drawable.github),
-                  title = "GitHub",
-                  subtitle = "EchoMusicApp/Echo-Music",
-                  onClick = { uriHandler.openUri("https://github.com/EchoMusicApp/Echo-Music") },
-              )
-              AboutDivider()
-              AboutActionRow(
-                  icon = painterResource(R.drawable.ic_discord_new),
-                  title = "Discord",
-                  subtitle = "discord.gg/EcfV3AxH5c",
-                  onClick = { uriHandler.openUri("https://discord.gg/EcfV3AxH5c") },
-              )
-              AboutDivider()
-              AboutActionRow(
-                  icon = painterResource(R.drawable.ic_telegram_new),
-                  title = "Telegram",
-                  subtitle = "t.me/EchoMusicApp",
-                  onClick = { uriHandler.openUri("https://t.me/EchoMusicApp") },
-              )
-          }
-      } */
 
     }
   }
@@ -254,7 +235,7 @@ private fun AboutAppCard() {
             scaleY = scale
             cameraDistance = 12f * density
           }
-          .clip(CircleShape)
+          .clip(RoundedCornerShape(22.dp))
           .clickable(
             interactionSource = interactionSource,
             indication = null,
@@ -266,12 +247,11 @@ private fun AboutAppCard() {
         Image(
           painter = painterResource(R.drawable.ic_launcher_nobg),
           contentDescription = null,
-          colorFilter = ColorFilter.tint(if (isDark) Color.White else Color(0xFFEA3829)),
           modifier = Modifier.fillMaxSize()
         )
       } else {
         coil3.compose.AsyncImage(
-          model = "https://avatars.githubusercontent.com/u/147871321?v=4",
+          model = "https://avatars.githubusercontent.com/u/251497230?v=4",
           contentDescription = null,
           modifier =
             Modifier.fillMaxSize().graphicsLayer { rotationY = 180f }, // Un-flip the backside image
@@ -283,7 +263,7 @@ private fun AboutAppCard() {
     Spacer(Modifier.height(4.dp))
 
     Text(
-      text = if (rotation <= 90f) "FAIRY MUSIC" else "FAIRY MUSIC",
+      text = if (rotation <= 90f) "FAIRY MUSIC" else "Developed by Benny",
       style = MaterialTheme.typography.titleLarge,
       fontWeight = FontWeight.Bold,
       color = MaterialTheme.colorScheme.onSurface,
