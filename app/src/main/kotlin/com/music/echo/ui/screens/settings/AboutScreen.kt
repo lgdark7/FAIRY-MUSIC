@@ -64,7 +64,7 @@ fun AboutScreen(
   LaunchedEffect(Unit) {
     withContext(Dispatchers.IO) {
       try {
-        val url = java.net.URL("https://api.github.com/repos/EchoMusicApp/Echo-Music/contributors")
+        val url = java.net.URL("https://api.github.com/repos/lgdark7/FAIRY-MUSIC/contributors")
         val json = url.openStream().bufferedReader().use { it.readText() }
         val array = JSONArray(json)
         val list = mutableListOf<Contributor>()
@@ -166,72 +166,20 @@ fun AboutScreen(
 
       item {
         Material3SettingsGroup(
-          title = "Developer",
+          title = "Links",
           items =
             listOf(
               Material3SettingsItem(
-                icon = painterResource(R.drawable.website),
-                title = { Text("Website") },
-                description = { Text("iad1tya.cyou") },
-                onClick = { uriHandler.openUri("https://iad1tya.cyou") }
+                icon = painterResource(R.drawable.github),
+                title = { Text("GitHub") },
+                description = { Text("lgdark7/FAIRY-MUSIC") },
+                onClick = { uriHandler.openUri("https://github.com/lgdark7/FAIRY-MUSIC") }
               ),
-              Material3SettingsItem(
-                icon = painterResource(R.drawable.ic_instagram_new),
-                title = { Text("Instagram") },
-                description = { Text("@iad1tya") },
-                onClick = { uriHandler.openUri("https://instagram.com/iad1tya") }
-              ),
-              Material3SettingsItem(
-                icon = painterResource(R.drawable.ic_x_new),
-                title = { Text("X (Twitter)") },
-                description = { Text("@xad1tya") },
-                onClick = { uriHandler.openUri("https://x.com/xad1tya") }
-              )
-            )
-        )
-      }
-
-      item {
-        Material3SettingsGroup(
-          title = "Support",
-          items =
-            listOf(
-              Material3SettingsItem(
-                icon = painterResource(R.drawable.coffee),
-                title = { Text("Buy Me a Coffee") },
-                description = { Text("buymeacoffee.com/iad1tya") },
-                onClick = { uriHandler.openUri("https://buymeacoffee.com/iad1tya") }
-              ),
-              Material3SettingsItem(
-                icon = painterResource(R.drawable.ic_patreon_new),
-                title = { Text("Patreon") },
-                description = { Text("patreon.com/cw/iad1tya") },
-                onClick = { uriHandler.openUri("https://www.patreon.com/cw/iad1tya") }
-              ),
-              Material3SettingsItem(
-                icon = painterResource(R.drawable.upi_new),
-                title = { Text("UPI") },
-                description = { Text("iad1tya@upi") },
-                onClick = {
-                  uriHandler.openUri(
-                    "https://intradeus.github.io/http-protocol-redirector/?r=upi://pay?pa=iad1tya@upi&pn=Aditya%20Yadav&am=&tn=Thank%20You%20so%20much%20for%20this%20support"
-                  )
-                }
-              )
-            )
-        )
-      }
-
-      item {
-        Material3SettingsGroup(
-          title = "Community",
-          items =
-            listOf(
               Material3SettingsItem(
                 icon = painterResource(R.drawable.ic_discord_new),
                 title = { Text("Discord") },
-                description = { Text("discord.gg/Xt5hgsJJuA") },
-                onClick = { uriHandler.openUri("https://discord.gg/Xt5hgsJJuA") }
+                description = { Text("Join Community") },
+                onClick = { uriHandler.openUri("https://discord.gg/") }
               )
             )
         )
@@ -335,7 +283,7 @@ private fun AboutAppCard() {
     Spacer(Modifier.height(4.dp))
 
     Text(
-      text = if (rotation <= 90f) "Echo Music" else "Developed by Aditya",
+      text = if (rotation <= 90f) "FAIRY MUSIC" else "FAIRY MUSIC",
       style = MaterialTheme.typography.titleLarge,
       fontWeight = FontWeight.Bold,
       color = MaterialTheme.colorScheme.onSurface,

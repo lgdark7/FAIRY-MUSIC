@@ -80,46 +80,19 @@ fun WelcomeDialog(onDismissRequest: () -> Unit) {
           )
         }
 
-        WelcomeSectionCard(title = "Support Echo") {
-          WelcomeActionRow(
-            icon = painterResource(R.drawable.coffee),
-            title = "Buy Me a Coffee",
-            subtitle = "buymeacoffee.com/iad1tya",
-            onClick = { uriHandler.openUri("https://buymeacoffee.com/iad1tya") }
-          )
-          WelcomeDivider()
-          WelcomeActionRow(
-            icon = painterResource(R.drawable.ic_patreon_new),
-            title = "Patreon",
-            subtitle = "patreon.com/cw/iad1tya",
-            onClick = { uriHandler.openUri("https://www.patreon.com/cw/iad1tya") }
-          )
-          WelcomeDivider()
-          WelcomeActionRow(
-            icon = painterResource(R.drawable.upi_new),
-            title = "UPI",
-            subtitle = "iad1tya@upi",
-            onClick = {
-              uriHandler.openUri(
-                "https://intradeus.github.io/http-protocol-redirector/?r=upi://pay?pa=iad1tya@upi&pn=Aditya%20Yadav&am=&tn=Thank%20You%20so%20much%20for%20this%20support"
-              )
-            }
-          )
-        }
-
         WelcomeSectionCard(title = "Community") {
           WelcomeActionRow(
             icon = painterResource(R.drawable.ic_discord_new),
             title = "Discord",
-            subtitle = "discord.gg/Xt5hgsJJuA",
-            onClick = { uriHandler.openUri("https://discord.gg/Xt5hgsJJuA") }
+            subtitle = "Join our Discord",
+            onClick = { uriHandler.openUri("https://discord.gg/") }
           )
         }
 
         Spacer(modifier = Modifier.height(4.dp))
 
         Button(
-          onClick = { uriHandler.openUri("https://github.com/EchoMusicApp/Echo-Music") },
+          onClick = { uriHandler.openUri("https://github.com/lgdark7/FAIRY-MUSIC") },
           modifier = Modifier.fillMaxWidth().height(50.dp),
           shape = RoundedCornerShape(16.dp),
           colors =
@@ -181,7 +154,7 @@ private fun WelcomeAppCard() {
       )
       Spacer(Modifier.height(4.dp))
       Text(
-        text = "Echo Music",
+        text = "FAIRY MUSIC",
         style = MaterialTheme.typography.titleLarge,
         fontWeight = FontWeight.Bold,
         color = MaterialTheme.colorScheme.onSurface,

@@ -298,7 +298,7 @@ fun DiscordSettings(
   val (button2CustomUrl) =
     rememberPreference(
       key = DiscordActivityButton2CustomUrlKey,
-      defaultValue = "https://github.com/EchoMusicApp/Echo-Music",
+      defaultValue = "https://github.com/lgdark7/FAIRY-MUSIC",
     )
 
   val (activityType, onActivityTypeChange) =
@@ -1173,10 +1173,10 @@ fun RichPresence(
   button1Enabled: Boolean = true,
   button1UrlSource: String = "songurl",
   button1CustomUrl: String = "",
-  button2Label: String = "Go to Echo Music",
+  button2Label: String = "Go to FAIRY MUSIC",
   button2Enabled: Boolean = true,
   button2UrlSource: String = "custom",
-  button2CustomUrl: String = "https://github.com/EchoMusicApp/Echo-Music",
+  button2CustomUrl: String = "https://github.com/lgdark7/FAIRY-MUSIC",
   isPlaying: Boolean = false,
 ) {
   val context = LocalContext.current
