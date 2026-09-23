@@ -102,18 +102,6 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
 
-            <!-- Listen Together invite link (HTTPS App Link - works after APK installation verification) -->
-            <intent-filter android:autoVerify="true">
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-
-                <data android:scheme="https" />
-                <data android:host="echomusic-listen-together.onrender.com" />
-                <data android:pathPrefix="/listen" />
-            </intent-filter>
-
             <!-- Custom scheme for direct opens from browser (works in ALL browsers) -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -121,21 +109,8 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
-                <data android:scheme="echomusic" />
+                <data android:scheme="fairymusic" />
                 <data android:host="listen" />
-            </intent-filter>
-
-            <!-- Echo Music Share Links -->
-            <intent-filter android:autoVerify="true">
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-
-                <data android:scheme="http" />
-                <data android:scheme="https" />
-                <data android:host="share.echomusic.fun" />
-                <data android:pathPrefix="/" />
             </intent-filter>
 
             <!-- Youtube filter -->

@@ -58,32 +58,6 @@ fun AboutScreen(
 ) {
   val uriHandler = LocalUriHandler.current
 
-  data class Contributor(val login: String, val avatarUrl: String, val htmlUrl: String)
-  var contributors by remember { mutableStateOf<List<Contributor>>(emptyList()) }
-
-  LaunchedEffect(Unit) {
-    withContext(Dispatchers.IO) {
-      try {
-        val url = java.net.URL("https://api.github.com/repos/lgdark7/FAIRY-MUSIC/contributors")
-        val json = url.openStream().bufferedReader().use { it.readText() }
-        val array = JSONArray(json)
-        val list = mutableListOf<Contributor>()
-        for (i in 0 until array.length()) {
-          val obj = array.getJSONObject(i)
-          list.add(
-            Contributor(
-              obj.getString("login"),
-              obj.getString("avatar_url"),
-              obj.getString("html_url")
-            )
-          )
-        }
-        contributors = list
-      } catch (e: Exception) {
-        e.printStackTrace()
-      }
-    }
-  }
   val context = LocalContext.current
 
   Scaffold(
@@ -139,30 +113,6 @@ fun AboutScreen(
       verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
       item { AboutAppCard() }
-
-      if (contributors.isNotEmpty()) {
-        item {
-          Column(modifier = Modifier.fillMaxWidth()) {
-            echo.music.iad1tya.ui.component.PreferenceGroupTitle(title = "Contributors")
-            Row(
-              modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
-              horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-              contributors.forEach { contributor ->
-                coil3.compose.AsyncImage(
-                  model = contributor.avatarUrl,
-                  contentDescription = contributor.login,
-                  modifier =
-                    Modifier.size(48.dp).clip(CircleShape).clickable {
-                      uriHandler.openUri(contributor.htmlUrl)
-                    },
-                  contentScale = androidx.compose.ui.layout.ContentScale.Crop
-                )
-              }
-            }
-          }
-        }
-      }
 
       item {
         Material3SettingsGroup(
@@ -251,7 +201,7 @@ private fun AboutAppCard() {
         )
       } else {
         coil3.compose.AsyncImage(
-          model = "https://avatars.githubusercontent.com/u/251497230?v=4",
+          model = "https://github.com/lgdark7.png",
           contentDescription = null,
           modifier =
             Modifier.fillMaxSize().graphicsLayer { rotationY = 180f }, // Un-flip the backside image

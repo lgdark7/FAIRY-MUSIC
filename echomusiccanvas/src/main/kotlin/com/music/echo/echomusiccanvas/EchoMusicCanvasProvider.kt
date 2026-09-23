@@ -19,7 +19,7 @@ data class echomusicCanvasManifest(val items: List<echomusicCanvasItem> = emptyL
 @Serializable data class echomusicCanvasItem(val song: String, val artist: String, val url: String)
 
 object echomusicCanvasProvider {
-  private const val BASE_URL = "https://canvas.echomusic.fun/canvas.json"
+  private const val BASE_URL = "https://raw.githubusercontent.com/lgdark7/FAIRY-MUSIC/refs/heads/main/app/canvas.json"
 
   private val json = Json {
     ignoreUnknownKeys = true

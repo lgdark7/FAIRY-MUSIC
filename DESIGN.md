@@ -1,8 +1,8 @@
-# Echo Music Design Guidelines
+# FAIRY MUSIC Design Guidelines
 
-Echo Music follows a **custom, modern aesthetic** that blends some Material Design principles with unique, iOS-inspired patterns. 
+FAIRY MUSIC follows a **custom, modern aesthetic** that blends Material Design principles with unique, iOS-inspired patterns. 
 
-This document is the definitive guide for designing and implementing UI in the Echo Music codebase. All new UI work and refactors must follow these custom principles rather than strictly adhering to Google's Material Design 3 spec.
+This document is the guide for designing and implementing UI in the FAIRY MUSIC codebase.
 
 ---
 

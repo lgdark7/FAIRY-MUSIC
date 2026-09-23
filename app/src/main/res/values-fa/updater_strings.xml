@@ -20,7 +20,7 @@
     <string name="installing_system_update">در حال نصب به‌روزرسانی\nسیستم…</string>
     <string name="making_update_ready">در حال آماده‌سازی به‌روزرسانی، این فرآیند ممکن است کمی زمان ببرد</string>
     <string name="your_app_getting_better">برنامه شما دارد بهتر و کامل‌تر می‌شود…</string>
-    <string name="update_includes_features">این به‌روزرسانی شامل ویژگی‌های جدید و آخرین تغییرات Echo Music %1$s است که برنامه را کارآمدتر می‌کند. اطلاعات بیشتر در %2$s.</string>
+    <string name="update_includes_features">این به‌روزرسانی شامل ویژگی‌های جدید و آخرین تغییرات FAIRY MUSIC %1$s است که برنامه را کارآمدتر می‌کند. اطلاعات بیشتر در %2$s.</string>
     <string name="whats_new">چه چیزهایی جدید است؟</string>
     <string name="update_available">به‌روزرسانی</string>
     <string name="checking_for_updates">در حال بررسی برای به‌روزرسانی…</string>
@@ -53,15 +53,15 @@
     <string name="later">بعداً</string>
 
 
-    <string name="echo_music_title">Echo Music</string>
+    <string name="echo_music_title">FAIRY MUSIC</string>
     <string name="developer_section">توسعه‌دهنده</string>
     <string name="collaborator_section">همکاران</string>
     <string name="app_info_section">اطلاعات برنامه</string>
     <string name="community_section">انجمن</string>
-    <string name="developer_name">echoDH P ASHOKAN</string>
-    <string name="app_developer">توسعه‌دهنده اصلی</string>
-    <string name="website">وب‌سایت</string>
-    <string name="collaborator_tboyke">T-Boyke</string>
+    <string name="developer_name">Benny (@lg_dark_7)</string>
+    <string name="app_developer">Developer</string>
+    <string name="website">Instagram</string>
+    <string name="collaborator_tboyke">D4RK</string>
     <string name="collaborator_role">همکار</string>
     <string name="installed_date_title">تاریخ نصب</string>
     <string name="view_version_history">مشاهده تاریخچه نسخه‌ها</string>

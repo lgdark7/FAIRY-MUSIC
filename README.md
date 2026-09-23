@@ -89,7 +89,6 @@ FAIRY MUSIC is built upon foundational open-source music streaming architectures
 
 | Project | Description |
 | :--- | :--- |
-| **[Echo-Music](https://github.com/EchoMusicApp/Echo-Music)** | Upstream base music player architecture |
 | **[Metrolist](https://github.com/MetrolistGroup/Metrolist)** & **[Vivi Music](https://github.com/vivizzz007/vivi-music)** | Foundational inspiration and architecture reference |
 | **[ArchiveTune](https://github.com/koiverse/ArchiveTune)** | Material You UI inspiration |
 | **[Better Lyrics](https://better-lyrics.boidu.dev/)** | Lyrics enhancement and synchronization |

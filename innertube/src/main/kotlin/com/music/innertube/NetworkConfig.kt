@@ -66,7 +66,7 @@ object NetworkConfig {
           // Cache configuration
           if (enableCache) {
             val cacheDirectory =
-              cacheDir ?: File(System.getProperty("java.io.tmpdir"), "echomusic_http_cache")
+              cacheDir ?: File(System.getProperty("java.io.tmpdir"), "fairymusic_http_cache")
             cache(okhttp3.Cache(cacheDirectory, CACHE_SIZE_MB))
           }
         }

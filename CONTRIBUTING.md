@@ -1,6 +1,6 @@
-# Contributing to Echo Music
+# Contributing to FAIRY MUSIC
 
-Thank you for your interest in contributing to Echo Music! This document provides comprehensive guidelines and information for contributors.
+Thank you for your interest in contributing to FAIRY MUSIC! This document provides comprehensive guidelines and information for contributors.
 
 ## Table of Contents
 
@@ -65,12 +65,8 @@ We are committed to providing a welcoming and inspiring community for all. We pl
 1. Fork the repository on GitHub
 2. Clone your fork locally:
    ```bash
-   git clone https://github.com/YOUR_USERNAME/Echo-Music.git
-   cd Echo-Music
-   ```
-3. Add the upstream repository:
-   ```bash
-   git remote add upstream https://github.com/iad1tya/Echo-Music.git
+   git clone https://github.com/lgdark7/FAIRY-MUSIC.git
+   cd FAIRY-MUSIC
    ```
 
 ## Development Setup
@@ -428,30 +424,7 @@ We follow [Semantic Versioning](https://semver.org/):
 
 If you have questions about contributing:
 
-1. Check the [GitHub Discussions](https://github.com/iad1tya/Echo-Music/discussions)
-2. Create a new discussion
-3. Contact maintainers directly through GitHub
+1. Open an issue on [GitHub](https://github.com/lgdark7/FAIRY-MUSIC/issues)
+2. Contact maintainer on [Instagram](https://www.instagram.com/lg_dark_7)
 
-### Recognition
-
-Contributors will be recognized in:
-- README.md contributors section
-- Release notes
-- GitHub contributors page
-- App credits (if applicable)
-
-## Questions?
-
-If you have questions about contributing:
-
-1. Check the [GitHub Discussions](https://github.com/iad1tya/Echo-Music/discussions)
-2. Create a new discussion
-3. Contact maintainers directly
-
-Thank you for contributing to Echo Music!
-
----
-<div align="center">
-    <img src="assets/LMEB.gif"/>
-  </a>
-</div>
+Thank you for contributing to FAIRY MUSIC!

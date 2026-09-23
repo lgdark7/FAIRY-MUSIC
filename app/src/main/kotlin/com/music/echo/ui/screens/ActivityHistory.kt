@@ -1,4 +1,4 @@
-/** Echo Music Project (C) 2026 Licensed under GPL-3.0 | See git history for contributors */
+/** FAIRY MUSIC (C) 2026 Developed by Benny (@lg_dark_7) */
 package echo.music.iad1tya.ui.screens
 
 import androidx.compose.animation.animateContentSize

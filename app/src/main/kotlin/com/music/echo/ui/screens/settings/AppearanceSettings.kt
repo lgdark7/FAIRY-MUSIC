@@ -242,7 +242,7 @@ fun AppearanceSettings(
 
   val context = activity as Context
   val sharedPreferences = remember {
-    context.getSharedPreferences("echomusic_settings", Context.MODE_PRIVATE)
+    context.getSharedPreferences("fairymusic_settings", Context.MODE_PRIVATE)
   }
   val prefDensityScale =
     remember(sharedPreferences) { sharedPreferences.getFloat("density_scale_factor", 1.0f) }

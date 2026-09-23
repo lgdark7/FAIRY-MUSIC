@@ -99,8 +99,8 @@ fun AppIconSettingsScreen(
         listOf(
           AppIconOption(
             AppIconType.DEFAULT,
-            "New Icon",
-            "The standard vibrant icon",
+            "FAIRY MUSIC",
+            "The default quirky cat icon",
             R.mipmap.ic_launcher
           ),
           AppIconOption(
@@ -135,20 +135,20 @@ fun AppIconSettingsScreen(
           ),
           AppIconOption(
             AppIconType.ECHO_CAT,
-            "Echo Cat",
-            "A playful cat by Alarp_Svc",
+            "Playful Cat",
+            "A playful cat icon",
             R.mipmap.echo_cat_icon
           ),
           AppIconOption(
             AppIconType.EKO,
-            "Eko",
-            "A sleek design by Kouki",
+            "Sleek",
+            "A sleek modern design",
             R.mipmap.eko_icon
           ),
           AppIconOption(
             AppIconType.WIERD_CAT,
-            "Wierd Cat",
-            "A quirky cat by ! Udransh...",
+            "Quirky Cat",
+            "A quirky cat design",
             R.mipmap.wierd_cat_icon
           )
         )
