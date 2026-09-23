@@ -2,6 +2,7 @@ package echo.music.iad1tya.ui.screens.settings
 
 import android.content.Intent
 import android.net.Uri
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -133,8 +134,12 @@ fun UpdateSettings(
               }
             },
             onClick = {
-              val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://echomusic.fun"))
-              context.startActivity(intent)
+              if (isUpdateAvailable) {
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/lgdark7/FAIRY-MUSIC/releases/latest"))
+                context.startActivity(intent)
+              } else {
+                Toast.makeText(context, "You are up to date!", Toast.LENGTH_SHORT).show()
+              }
             }
           )
         )
@@ -142,7 +147,7 @@ fun UpdateSettings(
 
     Text(
       text =
-        "To download updates, you will be redirected to our official site containing ads. This helps fund the app's development. Thank you for your support!",
+        "You are up to date! Updates are published directly on GitHub Releases.",
       style = MaterialTheme.typography.bodySmall,
       color = MaterialTheme.colorScheme.onSurfaceVariant,
       modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp)
