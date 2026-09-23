@@ -66,14 +66,14 @@ class UpdateDownloadWorker(private val context: Context, workerParams: WorkerPar
         val inputStream = connection.inputStream
 
         val downloadDir =
-          File(context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), "echo_updates")
+          File(context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), "fairy_updates")
         if (!downloadDir.exists()) {
           downloadDir.mkdirs()
         }
 
         val isZip = apkUrl.contains("nightly.link") || apkUrl.endsWith(".zip")
         val downloadFile =
-          if (isZip) File(downloadDir, "echo_temp.zip") else File(downloadDir, "echomusic.apk")
+          if (isZip) File(downloadDir, "fairy_temp.zip") else File(downloadDir, "fairymusic.apk")
         val outputStream = FileOutputStream(downloadFile)
 
         val buffer = ByteArray(8192)
@@ -126,7 +126,7 @@ class UpdateDownloadWorker(private val context: Context, workerParams: WorkerPar
 
         val finalFile =
           if (isZip) {
-            val targetApkFile = File(downloadDir, "echomusic.apk")
+            val targetApkFile = File(downloadDir, "fairymusic.apk")
             var extracted = false
             try {
               ZipInputStream(downloadFile.inputStream()).use { zis ->

@@ -650,7 +650,11 @@ class MainActivity : ComponentActivity() {
           version = availableUpdateVersion,
           changelog = availableUpdateChangelog,
           description = availableUpdateDescription,
-          onDismiss = { showUpdateDialog = false }
+          onDismiss = { showUpdateDialog = false },
+          onUpdate = {
+            showUpdateDialog = false
+            navController.navigate("update")
+          }
         )
       } else {
         whatsNewInfo?.let { info ->

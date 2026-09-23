@@ -2,7 +2,10 @@ package echo.music.iad1tya.ui.component
 
 import android.content.Intent
 import android.net.Uri
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateIntAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -31,6 +34,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
@@ -56,15 +60,26 @@ fun AnimatedActionButton(
 
   val cornerPercent by
     animateIntAsState(
-      targetValue = if (isPressed) 15 else 50,
+      targetValue = if (isPressed) 16 else 50,
       animationSpec = tween(durationMillis = 200),
       label = "btnMorph"
+    )
+
+  val scale by
+    animateFloatAsState(
+      targetValue = if (isPressed) 0.94f else 1.0f,
+      animationSpec =
+        spring(
+          dampingRatio = Spring.DampingRatioMediumBouncy,
+          stiffness = Spring.StiffnessLow
+        ),
+      label = "btnScale"
     )
 
   if (isOutlined) {
     androidx.compose.material3.OutlinedButton(
       onClick = onClick,
-      modifier = modifier.height(buttonHeight),
+      modifier = modifier.height(buttonHeight).graphicsLayer { scaleX = scale; scaleY = scale },
       shape = RoundedCornerShape(cornerPercent),
       enabled = enabled,
       interactionSource = interactionSource,
@@ -75,7 +90,7 @@ fun AnimatedActionButton(
   } else {
     Button(
       onClick = onClick,
-      modifier = modifier.height(buttonHeight),
+      modifier = modifier.height(buttonHeight).graphicsLayer { scaleX = scale; scaleY = scale },
       shape = RoundedCornerShape(cornerPercent),
       enabled = enabled,
       interactionSource = interactionSource,
@@ -108,11 +123,21 @@ fun ExpressiveIconButton(
       animationSpec = tween(durationMillis = 200),
       label = "corner"
     )
+  val scale by
+    animateFloatAsState(
+      targetValue = if (isPressed) 0.88f else 1.0f,
+      animationSpec =
+        spring(
+          dampingRatio = Spring.DampingRatioMediumBouncy,
+          stiffness = Spring.StiffnessMediumLow
+        ),
+      label = "iconScale"
+    )
 
   Surface(
     onClick = onClick,
     enabled = enabled,
-    modifier = modifier.size(44.dp),
+    modifier = modifier.size(44.dp).graphicsLayer { scaleX = scale; scaleY = scale },
     shape = RoundedCornerShape(cornerPercent),
     color = containerColor,
     contentColor = contentColor,

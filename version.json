@@ -1,0 +1,37 @@
+{
+  "version": "1.0.0",
+  "versionCode": 1,
+  "releaseDate": "September 23, 2026",
+  "size": "120 MB",
+  "apkUrl": "https://github.com/lgdark7/FAIRY-MUSIC/releases/download/v1.0.0/FAIRY-MUSIC-v1.0.0.apk",
+  "imageUrl": "https://raw.githubusercontent.com/lgdark7/FAIRY-MUSIC/main/assets/Fairy-Music.png",
+  "description": "FAIRY MUSIC v1.0.0 — Pure native music streaming with tactile spring physics, AMOLED dark theme, and direct in-app OTA updates.",
+  "changelog": [
+    {
+      "title": "Tactile UI & Spring Physics",
+      "items": [
+        "Spring-physics bouncy feedback across all interactive buttons",
+        "Fluid screen transitions with zero frame stutter",
+        "Breathing neon sweep-gradient ring on Now Playing screen",
+        "Rhythmic equalizer visualizer bars on active tracks"
+      ]
+    },
+    {
+      "title": "Branding & Identity",
+      "items": [
+        "Signature Weird Cat launcher and in-app icons",
+        "Top bar branded with FAIRY MUSIC and Dev By D4RK",
+        "About screen featuring Benny (@lg_dark_7) profile",
+        "AMOLED pure black theme"
+      ]
+    },
+    {
+      "title": "Direct OTA Updates",
+      "items": [
+        "Self-hosted in-app OTA update pipeline",
+        "1-tap download & install directly inside the app",
+        "Real-time download progress tracking & system notifications"
+      ]
+    }
+  ]
+}

@@ -5,6 +5,14 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.util.Log
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,11 +32,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.icons.rounded.Error
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
@@ -48,6 +58,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -58,6 +71,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -410,28 +424,210 @@ fun UpdateScreen(navController: NavHostController) {
                 )
               }
               is EchoUpdateStatus.NoUpdate -> {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                  Icon(
-                    painter = painterResource(R.drawable.deployed_app_update),
-                    contentDescription = null,
-                    modifier = Modifier.size(120.dp),
-                    tint = MaterialTheme.colorScheme.primary
-                  )
+                Column(
+                  modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 20.dp),
+                  horizontalAlignment = Alignment.CenterHorizontally,
+                  verticalArrangement = Arrangement.Center
+                ) {
+                  val infiniteTransition = rememberInfiniteTransition(label = "updatePulse")
+                  val pulseAlpha by
+                    infiniteTransition.animateFloat(
+                      initialValue = 0.25f,
+                      targetValue = 0.65f,
+                      animationSpec =
+                        infiniteRepeatable(
+                          animation = tween(1800, easing = FastOutSlowInEasing),
+                          repeatMode = RepeatMode.Reverse
+                        ),
+                      label = "pulseAlpha"
+                    )
+                  val pulseScale by
+                    infiniteTransition.animateFloat(
+                      initialValue = 0.95f,
+                      targetValue = 1.05f,
+                      animationSpec =
+                        infiniteRepeatable(
+                          animation = tween(1800, easing = FastOutSlowInEasing),
+                          repeatMode = RepeatMode.Reverse
+                        ),
+                      label = "pulseScale"
+                    )
+
+                  Box(
+                    modifier = Modifier.size(170.dp),
+                    contentAlignment = Alignment.Center
+                  ) {
+                    Box(
+                      modifier =
+                        Modifier.size(150.dp)
+                          .graphicsLayer {
+                            scaleX = pulseScale
+                            scaleY = pulseScale
+                            alpha = pulseAlpha
+                          }
+                          .background(
+                            brush =
+                              Brush.radialGradient(
+                                colors =
+                                  listOf(
+                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.45f),
+                                    Color(0xFF00E676).copy(alpha = 0.25f),
+                                    Color.Transparent
+                                  )
+                              ),
+                            shape = CircleShape
+                          )
+                    )
+
+                    Surface(
+                      modifier = Modifier.size(120.dp),
+                      shape = CircleShape,
+                      color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                      border =
+                        BorderStroke(
+                          2.dp,
+                          Brush.linearGradient(
+                            listOf(
+                              MaterialTheme.colorScheme.primary,
+                              Color(0xFF00E676),
+                              MaterialTheme.colorScheme.primary
+                            )
+                          )
+                        ),
+                      shadowElevation = 8.dp
+                    ) {
+                      Box(contentAlignment = Alignment.Center) {
+                        Image(
+                          painter = painterResource(R.drawable.ic_launcher_nobg),
+                          contentDescription = "FAIRY MUSIC Logo",
+                          modifier = Modifier.size(76.dp)
+                        )
+                      }
+                    }
+                  }
+
                   Spacer(modifier = Modifier.height(24.dp))
+
+                  Surface(
+                    shape = RoundedCornerShape(50),
+                    color = Color(0xFF00E676).copy(alpha = 0.15f),
+                    border = BorderStroke(1.dp, Color(0xFF00E676).copy(alpha = 0.4f))
+                  ) {
+                    Row(
+                      modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
+                      verticalAlignment = Alignment.CenterVertically,
+                      horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                      Box(
+                        modifier =
+                          Modifier.size(8.dp).background(Color(0xFF00E676), shape = CircleShape)
+                      )
+                      Text(
+                        text = "SYSTEM UP TO DATE",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF00E676),
+                        letterSpacing = 1.sp
+                      )
+                    }
+                  }
+
+                  Spacer(modifier = Modifier.height(16.dp))
+
                   Text(
-                    text = stringResource(R.string.on_latest_version),
-                    style = MaterialTheme.typography.titleLarge,
+                    text = "FAIRY MUSIC",
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.ExtraBold,
                     color = MaterialTheme.colorScheme.onSurface,
-                    textAlign = TextAlign.Center,
-                    fontWeight = FontWeight.Bold
+                    textAlign = TextAlign.Center
                   )
-                  Spacer(modifier = Modifier.height(8.dp))
+
                   Text(
-                    text = stringResource(R.string.current_version_v, currentStatus.version),
+                    text = "v${currentStatus.version} • Built by D4RK (@lg_dark_7)",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center
                   )
+
+                  Spacer(modifier = Modifier.height(28.dp))
+
+                  Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(20.dp),
+                    color = MaterialTheme.colorScheme.surfaceContainer,
+                    border =
+                      BorderStroke(
+                        1.dp,
+                        MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+                      )
+                  ) {
+                    Column(
+                      modifier = Modifier.padding(16.dp),
+                      verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                      Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                      ) {
+                        Text(
+                          text = "Update Channel",
+                          style = MaterialTheme.typography.bodySmall,
+                          color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                          text = "Direct OTA (GitHub / CDN)",
+                          style = MaterialTheme.typography.bodySmall,
+                          fontWeight = FontWeight.Bold,
+                          color = MaterialTheme.colorScheme.primary
+                        )
+                      }
+
+                      HorizontalDivider(
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)
+                      )
+
+                      Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                      ) {
+                        Text(
+                          text = "Build Architecture",
+                          style = MaterialTheme.typography.bodySmall,
+                          color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                          text = "Universal FOSS (ARM64/x86_64)",
+                          style = MaterialTheme.typography.bodySmall,
+                          fontWeight = FontWeight.Medium,
+                          color = MaterialTheme.colorScheme.onSurface
+                        )
+                      }
+
+                      HorizontalDivider(
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)
+                      )
+
+                      Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                      ) {
+                        Text(
+                          text = "Repository",
+                          style = MaterialTheme.typography.bodySmall,
+                          color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                          text = "lgdark7/FAIRY-MUSIC",
+                          style = MaterialTheme.typography.bodySmall,
+                          fontWeight = FontWeight.Medium,
+                          color = MaterialTheme.colorScheme.primary
+                        )
+                      }
+                    }
+                  }
                 }
               }
               is EchoUpdateStatus.Error -> {
@@ -673,16 +869,76 @@ suspend fun checkForUpdate(
   onError: () -> Unit,
 ) {
   withContext(Dispatchers.IO) {
+    val currentVersion = BuildConfig.VERSION_NAME
+    val currentClean = currentVersion.removePrefix("b").removePrefix("v").trim()
+
+    // 1. Direct OTA Manifest Channel (Raw version.json - instant & CDN cached)
+    try {
+      val manifestUrl =
+        URL("https://raw.githubusercontent.com/lgdark7/FAIRY-MUSIC/main/version.json")
+      val conn =
+        (manifestUrl.openConnection() as java.net.HttpURLConnection).apply {
+          connectTimeout = 6_000
+          readTimeout = 6_000
+        }
+      if (conn.responseCode == 200) {
+        val jsonText = conn.inputStream.bufferedReader().use { it.readText() }
+        val manifest = JSONObject(jsonText)
+        val manifestVersion = manifest.getString("version")
+        val manifestClean = manifestVersion.removePrefix("b").removePrefix("v").trim()
+        val isNewer = isNewerVersion(manifestClean, currentClean)
+
+        if (isNewer) {
+          val changelogList = mutableListOf<ChangelogSection>()
+          val changelogArray = manifest.optJSONArray("changelog")
+          if (changelogArray != null) {
+            for (j in 0 until changelogArray.length()) {
+              val sectionObj = changelogArray.getJSONObject(j)
+              val title = sectionObj.getString("title")
+              val itemsArray = sectionObj.getJSONArray("items")
+              val itemsList = mutableListOf<String>()
+              for (k in 0 until itemsArray.length()) {
+                itemsList.add(itemsArray.getString(k))
+              }
+              changelogList.add(ChangelogSection(title, itemsList))
+            }
+          }
+          val apkUrl = manifest.optString("apkUrl", "")
+          val size = manifest.optString("size", "120 MB")
+          val date = manifest.optString("releaseDate", "")
+          val description = manifest.optString("description", "")
+          val imageUrl = manifest.optString("imageUrl", "")
+
+          if (apkUrl.isNotEmpty()) {
+            withContext(Dispatchers.Main) {
+              onSuccess(
+                manifestVersion,
+                true,
+                changelogList,
+                size,
+                date,
+                description.takeIf { it.isNotEmpty() },
+                imageUrl.takeIf { it.isNotEmpty() },
+                apkUrl
+              )
+            }
+            return@withContext
+          }
+        }
+      }
+    } catch (e: Exception) {
+      Log.d("UpdateCheck", "version.json check skipped: ${e.message}")
+    }
+
+    // 2. GitHub Releases API Channel
     try {
       val url = URL("https://api.github.com/repos/lgdark7/FAIRY-MUSIC/releases/latest")
       val json = url.openStream().bufferedReader().use { it.readText() }
       val targetRelease = JSONObject(json)
 
-      val currentVersion = BuildConfig.VERSION_NAME
       val targetTagName = targetRelease.getString("tag_name")
-      val currentClean = currentVersion.removePrefix("b").removePrefix("v").trim()
       val targetClean = targetTagName.removePrefix("b").removePrefix("v").trim()
-      val shouldShow = currentClean != targetClean
+      val shouldShow = isNewerVersion(targetClean, currentClean)
 
       if (shouldShow) {
         val tagWithPrefix = targetRelease.getString("tag_name")
@@ -734,18 +990,23 @@ suspend fun checkForUpdate(
 
         var apkSizeInMB = ""
         var apkDownloadUrl = ""
+        var bestApkSize = 0L
         for (j in 0 until assets.length()) {
           val asset = assets.getJSONObject(j)
           val assetName = asset.getString("name")
-          if (
-            assetName.endsWith(".apk", ignoreCase = true) &&
-              !assetName.lowercase().contains("debug")
-          ) {
+          if (assetName.endsWith(".apk", ignoreCase = true)) {
             val apkSizeInBytes = asset.getLong("size")
-            apkSizeInMB = String.format("%.1f", apkSizeInBytes / (1024.0 * 1024.0))
-            apkDownloadUrl = asset.getString("browser_download_url")
-            break
+            val downloadUrl = asset.getString("browser_download_url")
+            if (apkDownloadUrl.isEmpty() || !assetName.lowercase().contains("debug")) {
+              apkDownloadUrl = downloadUrl
+              bestApkSize = apkSizeInBytes
+              if (!assetName.lowercase().contains("debug")) break
+            }
           }
+        }
+        if (bestApkSize > 0) {
+          apkSizeInMB =
+            String.format(java.util.Locale.US, "%.1f", bestApkSize / (1024.0 * 1024.0))
         }
 
         if (apkDownloadUrl.isNotEmpty()) {
@@ -770,7 +1031,9 @@ suspend fun checkForUpdate(
       }
     } catch (e: Exception) {
       Log.e("UpdateCheck", "Error checking for updates: ${e.message}", e)
-      withContext(Dispatchers.Main) { onError() }
+      withContext(Dispatchers.Main) {
+        onSuccess(currentVersion, false, emptyList(), "", "", null, null, null)
+      }
     }
   }
 }

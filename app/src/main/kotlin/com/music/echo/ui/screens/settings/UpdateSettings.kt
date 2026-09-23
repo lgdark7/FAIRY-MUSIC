@@ -134,12 +134,7 @@ fun UpdateSettings(
               }
             },
             onClick = {
-              if (isUpdateAvailable) {
-                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/lgdark7/FAIRY-MUSIC/releases/latest"))
-                context.startActivity(intent)
-              } else {
-                Toast.makeText(context, "You are up to date!", Toast.LENGTH_SHORT).show()
-              }
+              navController.navigate("update")
             }
           )
         )
