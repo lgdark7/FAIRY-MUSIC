@@ -478,6 +478,7 @@ class MainActivity : ComponentActivity() {
     downloadUtil: DownloadUtil,
     syncUtils: SyncUtils,
   ) {
+    val navController = rememberNavController().also { this@MainActivity.navController = it }
     val enableDynamicTheme by rememberPreference(DynamicThemeKey, defaultValue = true)
     val enableHighRefreshRate by rememberPreference(EnableHighRefreshRateKey, defaultValue = true)
     val context = LocalContext.current
@@ -657,7 +658,11 @@ class MainActivity : ComponentActivity() {
           onDismiss = { showUpdateDialog = false },
           onUpdate = {
             showUpdateDialog = false
-            navController.navigate("update")
+            try {
+              navController.navigate("update")
+            } catch (e: Exception) {
+              android.util.Log.e("UpdateCheck", "Failed to navigate to update screen", e)
+            }
           }
         )
       } else {
@@ -710,7 +715,6 @@ class MainActivity : ComponentActivity() {
         val bottomInset = with(density) { windowsInsets.getBottom(density).toDp() }
         val bottomInsetDp = WindowInsets.systemBars.asPaddingValues().calculateBottomPadding()
 
-        val navController = rememberNavController()
         val homeViewModel: HomeViewModel = hiltViewModel()
         val accountImageUrl by homeViewModel.accountImageUrl.collectAsState()
         val navBackStackEntry by navController.currentBackStackEntryAsState()
