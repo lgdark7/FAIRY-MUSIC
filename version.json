@@ -1,35 +1,34 @@
 {
-  "version": "1.0.1",
-  "versionCode": 2,
+  "version": "1.0.2",
+  "versionCode": 3,
   "releaseDate": "September 24, 2026",
   "size": "120 MB",
-  "apkUrl": "https://github.com/lgdark7/FAIRY-MUSIC/releases/download/v1.0.1/FAIRY-MUSIC-v1.0.1.apk",
+  "apkUrl": "https://github.com/lgdark7/FAIRY-MUSIC/releases/download/v1.0.2/FAIRY-MUSIC-v1.0.2.apk",
   "imageUrl": "https://raw.githubusercontent.com/lgdark7/FAIRY-MUSIC/main/assets/Fairy-Music.png",
-  "description": "FAIRY MUSIC v1.0.1 — Restored Listen Together party mode with instant auto-approval, fixed Google/YouTube account login, and enhanced stability.",
+  "description": "FAIRY MUSIC v1.0.2 — Resolved Listen Together playback sync glitch, eliminated endless forward-seeking loops, fixed simultaneous multi-device party audio, and reinforced OTA update permissions.",
   "changelog": [
     {
-      "title": "Listen Together Party Mode",
+      "title": "Listen Together Sync & Stability",
       "items": [
-        "Enabled Instant Auto-Approval by default for seamless room joining",
-        "Added real-time In-App Pop-up Dialog for instant host approval/rejection",
-        "Added direct Auto-Approve toggle inside the active room card",
-        "Fixed relay server client handshake to prevent room hosting rejections"
+        "Fixed playback glitch where songs would desync or rapidly forward/skip back and forth",
+        "Removed uncalibrated device-to-server clock skew arithmetic in position syncing",
+        "Resolved barrier deadlock so party guests start playing simultaneously when the host plays",
+        "Restricted ExoPlayer automated event broadcasting to host-only to prevent echo feedback loops",
+        "Guarded queue sync so guest queue state never ping-pongs or resets host playback"
       ]
     },
     {
-      "title": "Account & Login System",
+      "title": "Seamless In-App OTA Updates",
       "items": [
-        "Bypassed Google's 'disallowed_useragent' browser block with modern mobile UA",
-        "Enabled cross-domain third-party cookie sync for secure Google authentication",
-        "Resilient session capture ensuring library and private playlist access",
-        "Added instant login feedback and graceful account state recovery"
+        "Fully declared and retained android.permission.REQUEST_INSTALL_PACKAGES in FOSS manifest",
+        "Safe in-app package installer launch with zero crashes or forced browser redirects"
       ]
     },
     {
-      "title": "Tactile UI & OTA Stability",
+      "title": "Account & Login Reliability",
       "items": [
-        "Smoothed spring-physics animations and bouncy feedback",
-        "Dual-channel in-app OTA updates with zero-delay release resolution"
+        "Google authentication with Chrome 128 mobile User-Agent and third-party cookie sync",
+        "NPE protection on altered YouTube account layout headers"
       ]
     }
   ]

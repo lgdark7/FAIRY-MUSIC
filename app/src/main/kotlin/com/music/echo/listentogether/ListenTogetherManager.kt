@@ -133,7 +133,7 @@ constructor(
     object : Player.Listener {
       override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
         try {
-          if (isSyncing || !canControlMusic || !isInRoom) return
+          if (!isHost || isSyncing || !isInRoom) return
 
           val connection = playerConnection ?: return
           val player = connection.player
@@ -192,7 +192,7 @@ constructor(
 
       override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
         try {
-          if (isSyncing || !canControlMusic || !isInRoom) return
+          if (!isHost || isSyncing || !isInRoom) return
           if (mediaItem == null) return
 
           val connection = playerConnection ?: return
@@ -230,7 +230,7 @@ constructor(
         reason: Int
       ) {
         try {
-          if (isSyncing || !canControlMusic || !isInRoom) return
+          if (!isHost || isSyncing || !isInRoom) return
 
           if (reason == Player.DISCONTINUITY_REASON_SEEK) {
             Timber.tag(TAG).d("Host sending SEEK to ${newPosition.positionMs}")
@@ -318,42 +318,33 @@ constructor(
       }
     }
 
-    if (isInRoom && canControlMusic) {
+    if (isInRoom && isHost) {
       if (!playerListenerRegistered) {
         try {
           connection.player.addListener(playerListener)
           playerListenerRegistered = true
-          Timber.tag(TAG).d("Added player listener for room sync")
+          Timber.tag(TAG).d("Added player listener for room sync (HOST)")
         } catch (e: Exception) {
           Timber.tag(TAG).e(e, "Failed to add player listener")
           playerListenerRegistered = false
         }
       }
-      if (isHost) {
-        startQueueSyncObservation()
-        startHeartbeat()
-        startVolumeSyncObservation()
-      } else if (allowParticipantControl) {
-        startQueueSyncObservation()
-        stopHeartbeat()
-        stopVolumeSyncObservation()
-      }
+      startQueueSyncObservation()
+      startHeartbeat()
+      startVolumeSyncObservation()
     } else {
-      if (playerListenerRegistered && !isHost) {
+      if (playerListenerRegistered) {
         try {
           connection.player.removeListener(playerListener)
           playerListenerRegistered = false
+          Timber.tag(TAG).d("Removed player listener (GUEST)")
         } catch (e: Exception) {
           Timber.tag(TAG).e(e, "Failed to remove player listener")
         }
       }
-      if (!isHost) {
-        stopQueueSyncObservation()
-      }
-      if (!canControlMusic) {
-        stopHeartbeat()
-        stopVolumeSyncObservation()
-      }
+      stopQueueSyncObservation()
+      stopHeartbeat()
+      stopVolumeSyncObservation()
     }
     updateGuestMuteState()
   }
@@ -474,7 +465,8 @@ constructor(
           currentTrack = event.state.currentTrack,
           isPlaying = event.state.isPlaying,
           position = event.state.position,
-          queue = event.state.queue
+          queue = event.state.queue,
+          bypassBuffer = true
         )
         applyHostVolumeIfNeeded(event.state.volume)
         updateGuestMuteState()
@@ -542,7 +534,7 @@ constructor(
 
           val connection = playerConnection
           val player = connection?.player
-          if (player != null && !playerListenerRegistered) {
+          if (event.isHost && player != null && !playerListenerRegistered) {
             try {
               player.addListener(playerListener)
               playerListenerRegistered = true
@@ -738,54 +730,44 @@ constructor(
 
   private fun applyPendingSyncIfReady() {
     val pending = pendingSyncState ?: return
-    val pendingTrackId = pending.currentTrack?.id ?: bufferingTrackId ?: return
-    val completeForTrack = bufferCompleteReceivedForTrack
-
-    if (completeForTrack != pendingTrackId) return
-
     val connection = playerConnection ?: return
     val player = connection.player
 
-    Timber.tag(TAG)
-      .d(
-        "Applying pending sync: track=$pendingTrackId, pos=${pending.position}, play=${pending.isPlaying}"
-      )
-    isSyncing = true
+    scope.launch(Dispatchers.Main) {
+      isSyncing = true
+      var attempts = 0
+      while (player.playbackState != Player.STATE_READY && attempts < 60) {
+        delay(50)
+        attempts++
+      }
 
-    val targetPos = pending.position
-    val posDiff = kotlin.math.abs(player.currentPosition - targetPos)
-    val willPlay = pending.isPlaying
+      val targetPos = pending.position
+      val willPlay = pending.isPlaying
 
-    val tolerance =
-      if (willPlay && player.playWhenReady) PLAYBACK_POSITION_TOLERANCE_MS
-      else POSITION_TOLERANCE_MS
-
-    if (posDiff > tolerance) {
       Timber.tag(TAG)
         .d(
-          "Applying pending sync: seeking ${player.currentPosition} -> $targetPos (diff ${posDiff}ms > ${tolerance}ms)"
+          "Applying pending sync: targetPos=$targetPos, willPlay=$willPlay after ${attempts * 50}ms wait"
         )
-      connection.seekTo(targetPos)
-    } else {
-      Timber.tag(TAG).d("Applying pending sync: skipping seek (diff ${posDiff}ms < ${tolerance}ms)")
-    }
 
-    if (willPlay && !player.playWhenReady) {
-      Timber.tag(TAG).d("Applying pending sync: starting playback")
-      connection.play()
-    } else if (!willPlay && player.playWhenReady) {
-      Timber.tag(TAG).d("Applying pending sync: pausing playback")
-      connection.pause()
-    }
+      if (targetPos > 0) {
+        player.seekTo(targetPos)
+      }
 
-    scope.launch {
+      if (willPlay && !player.playWhenReady) {
+        Timber.tag(TAG).d("Applying pending sync: starting playback")
+        connection.play()
+      } else if (!willPlay && player.playWhenReady) {
+        Timber.tag(TAG).d("Applying pending sync: pausing playback")
+        connection.pause()
+      }
+
+      bufferingTrackId = null
+      pendingSyncState = null
+      bufferCompleteReceivedForTrack = null
+
       delay(200)
       isSyncing = false
     }
-
-    bufferingTrackId = null
-    pendingSyncState = null
-    bufferCompleteReceivedForTrack = null
   }
 
   private fun handlePlaybackSync(action: PlaybackActionPayload) {
@@ -803,11 +785,8 @@ constructor(
     try {
       when (action.action) {
         PlaybackActions.PLAY -> {
-          val basePos = action.position ?: 0L
+          val adjustedPos = action.position ?: 0L
           val now = System.currentTimeMillis()
-          val adjustedPos =
-            action.serverTime?.let { serverTime -> basePos + kotlin.math.max(0L, now - serverTime) }
-              ?: basePos
 
           Timber.tag(TAG)
             .d("Guest: PLAY at position $adjustedPos, currently playing=${player.playWhenReady}")
@@ -948,15 +927,15 @@ constructor(
               val queueTitle = action.queueTitle
               applyPlaybackState(
                 currentTrack = track,
-                isPlaying = false,
+                isPlaying = true,
                 position = 0,
                 queue = action.queue,
-                queueTitle = queueTitle
+                queueTitle = queueTitle,
+                bypassBuffer = true
               )
             } else {
-
               bufferingTrackId = track.id
-              syncToTrack(track, false, 0)
+              syncToTrack(track, true, 0)
             }
           }
         }
@@ -1092,17 +1071,10 @@ constructor(
   }
 
   private fun handleSyncState(state: SyncStatePayload) {
-    val now = System.currentTimeMillis()
-    val adjustedPos =
-      if (state.isPlaying) {
-        state.position + kotlin.math.max(0L, now - state.lastUpdate)
-      } else {
-        state.position
-      }
-
+    val adjustedPos = state.position
     Timber.tag(TAG)
       .d(
-        "handleSyncState: playing=${state.isPlaying}, pos=${state.position} -> adj=$adjustedPos, track=${state.currentTrack?.id}"
+        "handleSyncState: playing=${state.isPlaying}, pos=$adjustedPos, track=${state.currentTrack?.id}"
       )
 
     applyPlaybackState(
@@ -1121,7 +1093,7 @@ constructor(
     position: Long,
     queue: List<TrackInfo>?,
     queueTitle: String? = null,
-    bypassBuffer: Boolean = false
+    bypassBuffer: Boolean = true
   ) {
     val connection = playerConnection
     if (connection == null) {
@@ -1223,45 +1195,31 @@ constructor(
           Timber.tag(TAG).e(e, "Failed to set queue title during applyPlaybackState")
         }
 
-        if (bypassBuffer) {
-
-          Timber.tag(TAG).d("Bypass buffer: immediately applying play=$isPlaying at pos=$position")
-
-          var attempts = 0
-          while (player.playbackState != Player.STATE_READY && attempts < 100) {
-            delay(50)
-            attempts++
-          }
-          if (player.playbackState == Player.STATE_READY) {
-            Timber.tag(TAG).d("Player ready after ${attempts * 50}ms, seeking to $position")
-            player.seekTo(position)
-            if (isPlaying) {
-              connection.play()
-              Timber.tag(TAG).d("Bypass: PLAY issued")
-            } else {
-              connection.pause()
-              Timber.tag(TAG).d("Bypass: PAUSE issued")
-            }
-          } else {
-            Timber.tag(TAG).w("Player not ready after 5s timeout during bypass sync")
-          }
-
-          pendingSyncState = null
-          bufferingTrackId = null
-          bufferCompleteReceivedForTrack = null
-        } else {
-
-          connection.pause()
-          pendingSyncState =
-            SyncStatePayload(
-              currentTrack = currentTrack,
-              isPlaying = isPlaying,
-              position = position,
-              lastUpdate = System.currentTimeMillis()
-            )
-          applyPendingSyncIfReady()
-          client.sendBufferReady(currentTrack.id)
+        var attempts = 0
+        while (player.playbackState != Player.STATE_READY && attempts < 100) {
+          delay(50)
+          attempts++
         }
+        if (player.playbackState == Player.STATE_READY) {
+          Timber.tag(TAG).d("Player ready after ${attempts * 50}ms, seeking to $position")
+          if (position > 0) {
+            player.seekTo(position)
+          }
+          if (isPlaying) {
+            connection.play()
+            Timber.tag(TAG).d("PLAY issued")
+          } else {
+            connection.pause()
+            Timber.tag(TAG).d("PAUSE issued")
+          }
+        } else {
+          Timber.tag(TAG).w("Player not ready after 5s timeout during sync")
+        }
+
+        pendingSyncState = null
+        bufferingTrackId = null
+        bufferCompleteReceivedForTrack = null
+        client.sendBufferReady(currentTrack.id)
       } catch (e: Exception) {
         Timber.tag(TAG).e(e, "Error applying playback state")
       } finally {
@@ -1356,25 +1314,27 @@ constructor(
                   waitCount++
                 }
 
-                connection.pause()
+                if (position > 0) {
+                  connection.player.seekTo(position)
+                }
 
-                pendingSyncState =
-                  SyncStatePayload(
-                    currentTrack = track,
-                    isPlaying = shouldPlay,
-                    position = position,
-                    lastUpdate = System.currentTimeMillis()
-                  )
+                if (shouldPlay) {
+                  Timber.tag(TAG).d("Starting playback for track ${track.id} at pos $position")
+                  connection.play()
+                } else {
+                  Timber.tag(TAG).d("Pausing playback for track ${track.id} at pos $position")
+                  connection.pause()
+                }
 
-                applyPendingSyncIfReady()
+                bufferingTrackId = null
+                pendingSyncState = null
+                bufferCompleteReceivedForTrack = null
 
                 client.sendBufferReady(track.id)
                 Timber.tag(TAG)
-                  .d(
-                    "Sent buffer ready for ${track.id}, pending sync stored: pos=$position, play=$shouldPlay"
-                  )
+                  .d("Sent buffer ready for ${track.id}, playback ready: pos=$position, play=$shouldPlay")
 
-                delay(100)
+                delay(200)
                 isSyncing = false
               }
             }
@@ -1438,12 +1398,12 @@ constructor(
   }
 
   fun sendTrackChange(metadata: MediaMetadata) {
-    if (!canControlMusic || isSyncing) return
+    if (!isHost || isSyncing) return
     sendTrackChangeInternal(metadata)
   }
 
   private fun sendTrackChangeInternal(metadata: MediaMetadata) {
-    if (!canControlMusic) return
+    if (!isHost) return
 
     val durationMs = if (metadata.duration > 0) metadata.duration.toLong() * 1000 else 180000L
 
@@ -1496,7 +1456,7 @@ constructor(
           ?.map { windows -> windows.map { it.toTrackInfo() } }
           ?.distinctUntilChanged()
           ?.collectLatest { tracks ->
-            if (!canControlMusic || !isInRoom || isSyncing) return@collectLatest
+            if (!isHost || !isInRoom || isSyncing) return@collectLatest
 
             delay(500)
 
