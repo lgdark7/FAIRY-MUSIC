@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
+import android.widget.Toast
 import android.util.Log
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
@@ -329,28 +330,42 @@ fun UpdateScreen(navController: NavHostController) {
                         return@AnimatedActionButton
                       }
                       file.let { f ->
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                          if (!context.packageManager.canRequestPackageInstalls()) {
-                            val intent =
-                              Intent(android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES)
-                                .apply { data = Uri.parse("package:${context.packageName}") }
-                            context.startActivity(intent)
-                            return@let
+                        try {
+                          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            try {
+                              if (!context.packageManager.canRequestPackageInstalls()) {
+                                val intent =
+                                  Intent(android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES)
+                                    .apply { data = Uri.parse("package:${context.packageName}") }
+                                context.startActivity(intent)
+                                return@let
+                              }
+                            } catch (se: SecurityException) {
+                              val intent =
+                                Intent(android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES)
+                                  .apply { data = Uri.parse("package:${context.packageName}") }
+                              try {
+                                context.startActivity(intent)
+                                return@let
+                              } catch (_: Exception) {}
+                            }
                           }
+                          val uri =
+                            FileProvider.getUriForFile(
+                              context,
+                              "${context.packageName}.FileProvider",
+                              file
+                            )
+                          val installIntent =
+                            Intent(Intent.ACTION_VIEW).apply {
+                              setDataAndType(uri, "application/vnd.android.package-archive")
+                              addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                              addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            }
+                          ContextCompat.startActivity(context, installIntent, null)
+                        } catch (e: Exception) {
+                          Toast.makeText(context, "Install failed: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
                         }
-                        val uri =
-                          FileProvider.getUriForFile(
-                            context,
-                            "${context.packageName}.FileProvider",
-                            file
-                          )
-                        val installIntent =
-                          Intent(Intent.ACTION_VIEW).apply {
-                            setDataAndType(uri, "application/vnd.android.package-archive")
-                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                          }
-                        ContextCompat.startActivity(context, installIntent, null)
                       }
                     } else {
                       val urlToDownload =
