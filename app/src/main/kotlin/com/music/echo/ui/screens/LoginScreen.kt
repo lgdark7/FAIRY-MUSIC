@@ -6,6 +6,7 @@ import android.webkit.CookieManager
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.windowInsetsPadding
@@ -71,97 +72,126 @@ fun LoginScreen(
     modifier = Modifier.windowInsetsPadding(LocalPlayerAwareWindowInsets.current).fillMaxSize(),
     factory = { webViewContext ->
       WebView(webViewContext).apply {
+        val cookieManager = CookieManager.getInstance()
+        cookieManager.setAcceptCookie(true)
+        cookieManager.setAcceptThirdPartyCookies(this, true)
+
+        settings.apply {
+          javaScriptEnabled = true
+          domStorageEnabled = true
+          databaseEnabled = true
+          setSupportZoom(true)
+          builtInZoomControls = true
+          displayZoomControls = false
+          // Modern Mobile Chrome User-Agent to bypass Google's "disallowed_useragent" / insecure browser block
+          userAgentString =
+            "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Mobile Safari/537.36"
+        }
+
         webViewClient =
           object : WebViewClient() {
             override fun onPageFinished(view: WebView, url: String?) {
-              loadUrl("javascript:Android.onRetrieveVisitorData(window.yt.config_.VISITOR_DATA)")
-              loadUrl("javascript:Android.onRetrieveDataSyncId(window.yt.config_.DATASYNC_ID)")
+              if (url?.contains("youtube.com") == true) {
+                loadUrl("javascript:if(window.yt&&window.yt.config_){Android.onRetrieveVisitorData(window.yt.config_.VISITOR_DATA);Android.onRetrieveDataSyncId(window.yt.config_.DATASYNC_ID);}")
+              }
 
-              if (url?.startsWith("https://music.youtube.com") == true && !hasCompletedLogin) {
-                innerTubeCookie = CookieManager.getInstance().getCookie(url)
-                hasCompletedLogin = true
+              if (url != null && (url.contains("music.youtube.com") || url.contains("youtube.com")) && !hasCompletedLogin) {
+                val currentCookies = cookieManager.getCookie("https://music.youtube.com")
+                  ?: cookieManager.getCookie("https://youtube.com")
+                  ?: cookieManager.getCookie(url)
+                  ?: ""
 
-                coroutineScope.launch {
-                  delay(500)
+                if (currentCookies.contains("SAPISID") || currentCookies.contains("__Secure-3PAPISID") || currentCookies.contains("LOGIN_INFO")) {
+                  hasCompletedLogin = true
+                  innerTubeCookie = currentCookies
 
-                  YouTube.cookie = innerTubeCookie
-                  YouTube.dataSyncId = dataSyncId
-                  YouTube.visitorData = visitorData
+                  coroutineScope.launch {
+                    delay(600)
 
-                  Timber.d("Login: YouTube object initialized, validating...")
+                    YouTube.cookie = currentCookies
+                    YouTube.dataSyncId = dataSyncId
+                    YouTube.visitorData = visitorData
 
-                  YouTube.accountInfo()
-                    .onSuccess {
-                      accountName = it.name
-                      accountEmail = it.email.orEmpty()
-                      accountChannelHandle = it.channelHandle.orEmpty()
+                    Timber.d("Login: Validated Google cookies captured, resolving account details...")
 
-                      val newAccount =
-                        AccountData(
-                          name = it.name,
-                          email = it.email.orEmpty(),
-                          channelHandle = it.channelHandle.orEmpty(),
-                          cookie = innerTubeCookie,
-                          visitorData = visitorData,
-                          dataSyncId = dataSyncId,
-                          avatarUrl = it.thumbnailUrl.orEmpty()
-                        )
-                      val accounts =
-                        try {
-                            Json.decodeFromString<List<AccountData>>(savedAccountsJson)
-                          } catch (e: Exception) {
-                            emptyList()
-                          }
-                          .toMutableList()
-                      accounts.removeAll { acc -> acc.name == newAccount.name }
-                      accounts.add(newAccount)
-                      savedAccountsJson = Json.encodeToString(accounts)
+                    var resolvedName = "YouTube User"
+                    var resolvedEmail = ""
+                    var resolvedHandle = ""
+                    var resolvedAvatar = ""
 
-                      Timber.d("Login: Successfully logged in as ${it.name}, restarting app...")
-
-                      webView?.apply {
-                        stopLoading()
-                        clearHistory()
-                        clearCache(true)
-                        clearFormData()
+                    try {
+                      val info = YouTube.accountInfo().getOrNull()
+                      if (info != null) {
+                        resolvedName = info.name
+                        resolvedEmail = info.email.orEmpty()
+                        resolvedHandle = info.channelHandle.orEmpty()
+                        resolvedAvatar = info.thumbnailUrl.orEmpty()
                       }
+                    } catch (e: Exception) {
+                      Timber.w(e, "Login: accountInfo metadata query failed, proceeding with authenticated cookie session")
+                    }
 
-                      val intent =
-                        context.packageManager.getLaunchIntentForPackage(context.packageName)
-                      intent?.addFlags(
-                        Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    accountName = resolvedName
+                    accountEmail = resolvedEmail
+                    accountChannelHandle = resolvedHandle
+
+                    val newAccount =
+                      AccountData(
+                        name = resolvedName,
+                        email = resolvedEmail,
+                        channelHandle = resolvedHandle,
+                        cookie = currentCookies,
+                        visitorData = visitorData,
+                        dataSyncId = dataSyncId,
+                        avatarUrl = resolvedAvatar
                       )
-                      context.startActivity(intent)
-                      delay(500)
-                      Runtime.getRuntime().exit(0)
+                    val accounts =
+                      try {
+                          Json.decodeFromString<List<AccountData>>(savedAccountsJson)
+                        } catch (e: Exception) {
+                          emptyList()
+                        }
+                        .toMutableList()
+                    accounts.removeAll { acc -> acc.cookie == currentCookies || acc.name == newAccount.name }
+                    accounts.add(newAccount)
+                    savedAccountsJson = Json.encodeToString(accounts)
+
+                    Timber.d("Login: Successfully authenticated as $resolvedName, restarting app...")
+                    Toast.makeText(context, "Logged in as $resolvedName", Toast.LENGTH_SHORT).show()
+
+                    webView?.apply {
+                      stopLoading()
+                      clearHistory()
+                      clearCache(true)
+                      clearFormData()
                     }
-                    .onFailure {
-                      Timber.e(it, "Login: Authentication validation failed")
-                      hasCompletedLogin = false
-                      reportException(it)
-                    }
+
+                    val intent =
+                      context.packageManager.getLaunchIntentForPackage(context.packageName)
+                    intent?.addFlags(
+                      Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    )
+                    context.startActivity(intent)
+                    delay(500)
+                    Runtime.getRuntime().exit(0)
+                  }
                 }
               }
             }
           }
-        settings.apply {
-          javaScriptEnabled = true
-          setSupportZoom(true)
-          builtInZoomControls = true
-          displayZoomControls = false
-        }
+
         addJavascriptInterface(
           object {
             @JavascriptInterface
             fun onRetrieveVisitorData(newVisitorData: String?) {
-              if (newVisitorData != null) {
+              if (!newVisitorData.isNullOrBlank()) {
                 visitorData = newVisitorData
               }
             }
 
             @JavascriptInterface
             fun onRetrieveDataSyncId(newDataSyncId: String?) {
-              if (newDataSyncId != null) {
+              if (!newDataSyncId.isNullOrBlank()) {
                 dataSyncId = newDataSyncId.substringBefore("||")
               }
             }
@@ -170,8 +200,8 @@ fun LoginScreen(
         )
         webView = this
 
-        CookieManager.getInstance().removeAllCookies(null)
-        CookieManager.getInstance().flush()
+        cookieManager.removeAllCookies(null)
+        cookieManager.flush()
         loadUrl("https://accounts.google.com/ServiceLogin?continue=https%3A%2F%2Fmusic.youtube.com")
       }
     }

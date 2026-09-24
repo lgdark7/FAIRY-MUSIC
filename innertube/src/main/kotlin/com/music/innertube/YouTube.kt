@@ -2003,16 +2003,14 @@ object YouTube {
   }
 
   suspend fun accountInfo(): Result<AccountInfo> = runCatching {
-    innerTube
-      .accountMenu(WEB_REMIX)
-      .body<AccountMenuResponse>()
-      .actions[0]
-      .openPopupAction
-      .popup
-      .multiPageMenuRenderer
-      .header
+    val response = innerTube.accountMenu(WEB_REMIX).body<AccountMenuResponse>()
+    val renderer = response.actions.firstOrNull()
+      ?.openPopupAction
+      ?.popup
+      ?.multiPageMenuRenderer
+      ?.header
       ?.activeAccountHeaderRenderer
-      ?.toAccountInfo()!!
+    renderer?.toAccountInfo() ?: throw IllegalStateException("Could not find activeAccountHeaderRenderer")
   }
 
   suspend fun feedback(tokens: List<String>): Result<Boolean> = runCatching {

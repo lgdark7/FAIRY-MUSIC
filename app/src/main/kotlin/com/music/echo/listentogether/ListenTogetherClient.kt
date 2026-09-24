@@ -442,7 +442,11 @@ class ListenTogetherClient @Inject constructor(private val context: Context) {
     codec.format = MessageFormat.JSON
     codec.compressionEnabled = false
 
-    val request = Request.Builder().url(serverUrl).build()
+    val request =
+      Request.Builder()
+        .url(serverUrl)
+        .header("User-Agent", "okhttp/4.12.0")
+        .build()
 
     webSocket =
       client.newWebSocket(
@@ -868,7 +872,7 @@ class ListenTogetherClient @Inject constructor(private val context: Context) {
           _pendingJoinRequests.value += payload
           log(LogLevel.INFO, "Join request received", "User: ${payload.username}")
 
-          val autoApprovalEnabled = context.dataStore.get(ListenTogetherAutoApprovalKey, false)
+          val autoApprovalEnabled = context.dataStore.get(ListenTogetherAutoApprovalKey, true)
 
           if (_role.value == RoomRole.HOST) {
             if (autoApprovalEnabled) {
@@ -1397,6 +1401,7 @@ class ListenTogetherClient @Inject constructor(private val context: Context) {
       log(LogLevel.ERROR, "Cannot approve join", "Not host")
       return
     }
+    _pendingJoinRequests.value = _pendingJoinRequests.value.filter { it.userId != userId }
     sendMessage(MessageTypes.APPROVE_JOIN, ApproveJoinPayload(userId))
 
     joinRequestNotifications.remove(userId)?.let { notifId ->

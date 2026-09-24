@@ -38,6 +38,7 @@ import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -84,6 +85,7 @@ import echo.music.iad1tya.LocalListenTogetherManager
 import echo.music.iad1tya.LocalPlayerAwareWindowInsets
 import echo.music.iad1tya.R
 import echo.music.iad1tya.constants.AppBarHeight
+import echo.music.iad1tya.constants.ListenTogetherAutoApprovalKey
 import echo.music.iad1tya.constants.ListenTogetherInTopBarKey
 import echo.music.iad1tya.constants.ListenTogetherUsernameKey
 import echo.music.iad1tya.listentogether.ConnectionState
@@ -121,6 +123,7 @@ fun ListenTogetherScreen(navController: NavController, showTopBar: Boolean = fal
   val shouldShowTopBar = showTopBar || listenTogetherInTopBar
 
   var savedUsername by rememberPreference(ListenTogetherUsernameKey, "")
+  var autoApproval by rememberPreference(ListenTogetherAutoApprovalKey, true)
   var roomCodeInput by rememberSaveable { mutableStateOf("") }
   var usernameInput by rememberSaveable { mutableStateOf(savedUsername) }
 
@@ -224,6 +227,48 @@ fun ListenTogetherScreen(navController: NavController, showTopBar: Boolean = fal
     }
   }
 
+  if (isInRoom && isHost && pendingJoinRequests.isNotEmpty()) {
+    val firstRequest = pendingJoinRequests.first()
+    AlertDialog(
+      onDismissRequest = { },
+      icon = {
+        Icon(
+          painter = painterResource(R.drawable.person),
+          contentDescription = null,
+          tint = MaterialTheme.colorScheme.primary
+        )
+      },
+      title = {
+        Text(
+          text = "Join Request",
+          fontWeight = FontWeight.Bold
+        )
+      },
+      text = {
+        Text(
+          text = "\"${firstRequest.username}\" wants to join your Listen Together party room.",
+          style = MaterialTheme.typography.bodyLarge
+        )
+      },
+      confirmButton = {
+        Button(
+          onClick = { listenTogetherManager.approveJoin(firstRequest.userId) },
+          shape = RoundedCornerShape(12.dp)
+        ) {
+          Text("Approve")
+        }
+      },
+      dismissButton = {
+        FilledTonalButton(
+          onClick = { listenTogetherManager.rejectJoin(firstRequest.userId, "Rejected by host") },
+          shape = RoundedCornerShape(12.dp)
+        ) {
+          Text("Decline")
+        }
+      }
+    )
+  }
+
   LazyColumn(
     state = lazyListState,
     modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).imePadding(),
@@ -249,7 +294,6 @@ fun ListenTogetherScreen(navController: NavController, showTopBar: Boolean = fal
     }
 
     if (isInRoom) {
-
       roomState?.let { room ->
         item {
           RoomStatusCard(
@@ -259,6 +303,8 @@ fun ListenTogetherScreen(navController: NavController, showTopBar: Boolean = fal
             onAllowParticipantControlChange = { enabled ->
               listenTogetherManager.updateRoomSettings(enabled)
             },
+            autoApproval = autoApproval,
+            onAutoApprovalChange = { autoApproval = it },
             context = context,
             navController = navController
           )
@@ -652,6 +698,8 @@ private fun RoomStatusCard(
   isHost: Boolean,
   allowParticipantControl: Boolean,
   onAllowParticipantControlChange: (Boolean) -> Unit,
+  autoApproval: Boolean,
+  onAutoApprovalChange: (Boolean) -> Unit,
   context: Context,
   navController: NavController
 ) {
@@ -742,6 +790,35 @@ private fun RoomStatusCard(
             Spacer(modifier = Modifier.width(8.dp))
             Text(stringResource(R.string.copy_code))
           }
+        }
+
+        Spacer(modifier = Modifier.height(14.dp))
+        Row(
+          modifier =
+            Modifier.fillMaxWidth()
+              .clip(RoundedCornerShape(14.dp))
+              .background(MaterialTheme.colorScheme.surface)
+              .padding(horizontal = 16.dp, vertical = 10.dp),
+          verticalAlignment = Alignment.CenterVertically,
+          horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+          Column(modifier = Modifier.weight(1f)) {
+            Text(
+              text = "Auto-Approve Friends",
+              style = MaterialTheme.typography.bodyMedium,
+              fontWeight = FontWeight.SemiBold,
+              color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+              text = "Friends join room instantly without waiting",
+              style = MaterialTheme.typography.bodySmall,
+              color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+          }
+          Switch(
+            checked = autoApproval,
+            onCheckedChange = onAutoApprovalChange
+          )
         }
       }
     }

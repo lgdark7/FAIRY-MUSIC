@@ -105,7 +105,7 @@ fun ListenTogetherSettings(
   var serverUrl by
     rememberPreference(ListenTogetherServerUrlKey, ListenTogetherServers.defaultServerUrl)
   var username by rememberPreference(ListenTogetherUsernameKey, "")
-  var autoApproval by rememberPreference(ListenTogetherAutoApprovalKey, false)
+  var autoApproval by rememberPreference(ListenTogetherAutoApprovalKey, true)
   var syncHostVolume by rememberPreference(ListenTogetherSyncVolumeKey, true)
   var smartResync by rememberPreference(ListenTogetherSmartResyncKey, true)
 

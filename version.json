@@ -1,36 +1,35 @@
 {
-  "version": "1.0.0",
-  "versionCode": 1,
-  "releaseDate": "September 23, 2026",
+  "version": "1.0.1",
+  "versionCode": 2,
+  "releaseDate": "September 24, 2026",
   "size": "120 MB",
-  "apkUrl": "https://github.com/lgdark7/FAIRY-MUSIC/releases/download/v1.0.0/FAIRY-MUSIC-v1.0.0.apk",
+  "apkUrl": "https://github.com/lgdark7/FAIRY-MUSIC/releases/download/v1.0.1/FAIRY-MUSIC-v1.0.1.apk",
   "imageUrl": "https://raw.githubusercontent.com/lgdark7/FAIRY-MUSIC/main/assets/Fairy-Music.png",
-  "description": "FAIRY MUSIC v1.0.0 — Pure native music streaming with tactile spring physics, AMOLED dark theme, and direct in-app OTA updates.",
+  "description": "FAIRY MUSIC v1.0.1 — Restored Listen Together party mode with instant auto-approval, fixed Google/YouTube account login, and enhanced stability.",
   "changelog": [
     {
-      "title": "Tactile UI & Spring Physics",
+      "title": "Listen Together Party Mode",
       "items": [
-        "Spring-physics bouncy feedback across all interactive buttons",
-        "Fluid screen transitions with zero frame stutter",
-        "Breathing neon sweep-gradient ring on Now Playing screen",
-        "Rhythmic equalizer visualizer bars on active tracks"
+        "Enabled Instant Auto-Approval by default for seamless room joining",
+        "Added real-time In-App Pop-up Dialog for instant host approval/rejection",
+        "Added direct Auto-Approve toggle inside the active room card",
+        "Fixed relay server client handshake to prevent room hosting rejections"
       ]
     },
     {
-      "title": "Branding & Identity",
+      "title": "Account & Login System",
       "items": [
-        "Signature Weird Cat launcher and in-app icons",
-        "Top bar branded with FAIRY MUSIC and Dev By D4RK",
-        "About screen featuring Benny (@lg_dark_7) profile",
-        "AMOLED pure black theme"
+        "Bypassed Google's 'disallowed_useragent' browser block with modern mobile UA",
+        "Enabled cross-domain third-party cookie sync for secure Google authentication",
+        "Resilient session capture ensuring library and private playlist access",
+        "Added instant login feedback and graceful account state recovery"
       ]
     },
     {
-      "title": "Direct OTA Updates",
+      "title": "Tactile UI & OTA Stability",
       "items": [
-        "Self-hosted in-app OTA update pipeline",
-        "1-tap download & install directly inside the app",
-        "Real-time download progress tracking & system notifications"
+        "Smoothed spring-physics animations and bouncy feedback",
+        "Dual-channel in-app OTA updates with zero-delay release resolution"
       ]
     }
   ]
