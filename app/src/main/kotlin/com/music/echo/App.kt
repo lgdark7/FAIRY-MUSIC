@@ -322,6 +322,13 @@ class App : Application(), SingletonImageLoader.Factory {
 
     applicationScope.launch(Dispatchers.IO) {
       dataStore.data
+        .map { (try { it[MaxImageCacheSizeKey] } catch (_: Exception) { null }) ?: 512 }
+        .distinctUntilChanged()
+        .collect { cachedCoilCacheSize = it }
+    }
+
+    applicationScope.launch(Dispatchers.IO) {
+      dataStore.data
         .map {
           (try {
             it[IpVersionKey]
@@ -336,22 +343,10 @@ class App : Application(), SingletonImageLoader.Factory {
     }
   }
 
-  @Volatile private var cachedCoilCacheSize: Int? = null
+  @Volatile private var cachedCoilCacheSize: Int = 512
 
   override fun newImageLoader(context: PlatformContext): ImageLoader {
-    val cacheSize =
-      cachedCoilCacheSize
-        ?: runBlocking {
-          dataStore.data
-            .map {
-              (try {
-                it[MaxImageCacheSizeKey]
-              } catch (e: Exception) {
-                null
-              }) ?: 512
-            }
-            .first()
-        }
+    val cacheSize = cachedCoilCacheSize
     return ImageLoader.Builder(this)
       .apply {
         crossfade(true)

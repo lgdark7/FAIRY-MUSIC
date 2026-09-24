@@ -1,5 +1,15 @@
 package echo.music.iad1tya
 
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
+
+
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.ComponentName
@@ -1106,11 +1116,26 @@ class MainActivity : ComponentActivity() {
                           verticalAlignment = Alignment.CenterVertically,
                           horizontalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
+                          val logoPulseTransition = rememberInfiniteTransition(label = "logoPulse")
+                          val logoPulseAlpha by logoPulseTransition.animateFloat(
+                            initialValue = 0.35f,
+                            targetValue = 0.95f,
+                            animationSpec = infiniteRepeatable(
+                              animation = tween(2200, easing = FastOutSlowInEasing),
+                              repeatMode = RepeatMode.Reverse
+                            ),
+                            label = "logoAlpha"
+                          )
+
                           Box(
                             modifier =
                               Modifier.size(38.dp)
                                 .clip(RoundedCornerShape(10.dp))
-                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)),
+                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f))
+                                .border(
+                                  BorderStroke(1.5.dp, MaterialTheme.colorScheme.primary.copy(alpha = logoPulseAlpha)),
+                                  RoundedCornerShape(10.dp)
+                                ),
                             contentAlignment = Alignment.Center
                           ) {
                             Image(

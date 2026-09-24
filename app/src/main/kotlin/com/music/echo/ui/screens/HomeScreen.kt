@@ -1,7 +1,32 @@
 package echo.music.iad1tya.ui.screens
 
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.sp
+import echo.music.iad1tya.ui.component.PlayingIndicator
+import echo.music.iad1tya.models.MediaMetadata
+
+
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
@@ -79,10 +104,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -202,6 +224,8 @@ fun CommunityPlaylistCard(
 ) {
   val database = LocalDatabase.current
   val playerConnection = LocalPlayerConnection.current
+
+
   val scope = rememberCoroutineScope()
   val isDark = isSystemInDarkTheme()
 
@@ -597,6 +621,8 @@ fun HomeScreen(
   val innerTubeCookie by rememberPreference(InnerTubeCookieKey, "")
   val (randomizeHomeOrder) = rememberPreference(RandomizeHomeOrderKey, true)
   val (showSpeedDial) = rememberPreference(ShowSpeedDialKey, true)
+  val pinnedSpeedDialItems by database.speedDialDao.getAll().collectAsState(initial = emptyList())
+  val pinnedSpeedDialIds = remember(pinnedSpeedDialItems) { pinnedSpeedDialItems.map { it.id }.toSet() }
 
   val isLoggedIn = remember(innerTubeCookie) { "SAPISID" in parseCookieString(innerTubeCookie) }
   val url = if (isLoggedIn) accountImageUrl else null
@@ -912,7 +938,48 @@ fun HomeScreen(
         state = lazylistState,
         contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues()
       ) {
-        item {
+        item(key = "fairy_home_hero_card") {
+          FairyHomeHeroCard(
+            onMagicMixClick = {
+              if (isRandomizing) {
+                randomizeJob?.cancel()
+              } else {
+                randomizeJob =
+                  scope.launch {
+                    val randomItem = viewModel.getRandomItem()
+                    if (randomItem != null) {
+                      when (randomItem) {
+                        is SongItem ->
+                          playerConnection.playQueue(
+                            YouTubeQueue(
+                              randomItem.endpoint
+                                ?: WatchEndpoint(videoId = randomItem.id),
+                              randomItem.toMediaMetadata()
+                            )
+                          )
+                        is AlbumItem -> navController.navigate("album/${randomItem.id}")
+                        is ArtistItem -> navController.navigate("artist/${randomItem.id}")
+                        is PlaylistItem -> navController.navigateToPlaylistItem(randomItem)
+                      }
+                    }
+                  }
+              }
+            },
+            onListenTogetherClick = { navController.navigate(Screens.ListenTogether.route) },
+            onSpeedDialClick = {
+              scope.launch {
+                lazylistState.animateScrollToItem(index = 2)
+              }
+            },
+            mediaMetadata = mediaMetadata,
+            isPlaying = isPlaying,
+            onNowPlayingClick = {
+              playerConnection.player.playWhenReady = !playerConnection.player.playWhenReady
+            }
+          )
+        }
+
+        item(key = "chips_row") {
           ChipsRow(
             chips =
               homePage
@@ -1035,10 +1102,7 @@ fun HomeScreen(
                                   }
                                 } else if (itemIndex < pageItems.size) {
                                   val item = pageItems[itemIndex]
-                                  val isPinned by
-                                    database.speedDialDao
-                                      .isPinned(item.id)
-                                      .collectAsState(initial = false)
+                                  val isPinned = item.id in pinnedSpeedDialIds
 
                                   Box(
                                     modifier =
@@ -1854,5 +1918,278 @@ fun HomeScreen(
         item(key = "bottom_spacer") { Spacer(modifier = Modifier.height(30.dp)) }
       }
     }
+  }
+}
+
+
+@Composable
+fun FairyHomeHeroCard(
+  onMagicMixClick: () -> Unit,
+  onListenTogetherClick: () -> Unit,
+  onSpeedDialClick: () -> Unit,
+  mediaMetadata: MediaMetadata?,
+  isPlaying: Boolean,
+  onNowPlayingClick: () -> Unit,
+  modifier: Modifier = Modifier
+) {
+  val infiniteTransition = rememberInfiniteTransition(label = "fairyHero")
+  val borderAngle by infiniteTransition.animateFloat(
+    initialValue = 0f,
+    targetValue = 360f,
+    animationSpec = infiniteRepeatable(
+      animation = tween(8000, easing = LinearEasing),
+      repeatMode = RepeatMode.Restart
+    ),
+    label = "sweepAngle"
+  )
+
+  val greeting = remember {
+    val hour = java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY)
+    when (hour) {
+      in 5..11 -> "Good Morning, Benny 🌅"
+      in 12..16 -> "Good Afternoon, Benny ☀️"
+      in 17..21 -> "Good Evening, Benny 🌆"
+      else -> "Late Night Rhythm, Benny 🌙"
+    }
+  }
+
+  val borderBrush = Brush.sweepGradient(
+    listOf(
+      Color(0xFF8E24AA).copy(alpha = 0.6f),
+      Color(0xFF00E5FF).copy(alpha = 0.7f),
+      Color(0xFFFF4081).copy(alpha = 0.6f),
+      Color(0xFF8E24AA).copy(alpha = 0.6f)
+    )
+  )
+
+  Box(
+    modifier = modifier
+      .fillMaxWidth()
+      .padding(horizontal = 16.dp, vertical = 6.dp)
+      .clip(RoundedCornerShape(24.dp))
+      .background(
+        Brush.verticalGradient(
+          colors = listOf(
+            MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.85f),
+            MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.95f)
+          )
+        )
+      )
+      .border(BorderStroke(1.5.dp, borderBrush), RoundedCornerShape(24.dp))
+      .padding(16.dp)
+  ) {
+    Column(
+      modifier = Modifier.fillMaxWidth(),
+      verticalArrangement = Arrangement.spacedBy(14.dp)
+    ) {
+      // Top row: Greeting & Fairy Emblem
+      Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+      ) {
+        Column(modifier = Modifier.weight(1f)) {
+          Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+          ) {
+            Box(
+              modifier = Modifier
+                .clip(RoundedCornerShape(8.dp))
+                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.18f))
+                .padding(horizontal = 8.dp, vertical = 3.dp)
+            ) {
+              Text(
+                text = "✨ FAIRY MAGIC",
+                style = MaterialTheme.typography.labelSmall.copy(
+                  fontWeight = FontWeight.Bold,
+                  letterSpacing = 1.sp,
+                  color = MaterialTheme.colorScheme.primary
+                )
+              )
+            }
+          }
+          Spacer(modifier = Modifier.height(4.dp))
+          Text(
+            text = greeting,
+            style = MaterialTheme.typography.titleMedium.copy(
+              fontWeight = FontWeight.ExtraBold,
+              fontSize = 19.sp
+            ),
+            color = MaterialTheme.colorScheme.onSurface
+          )
+          Text(
+            text = "Lossless stream • Pure audio immersion",
+            style = MaterialTheme.typography.bodySmall.copy(
+              color = MaterialTheme.colorScheme.onSurfaceVariant,
+              fontSize = 11.sp
+            )
+          )
+        }
+
+        Box(
+          modifier = Modifier
+            .size(44.dp)
+            .clip(CircleShape)
+            .background(
+              Brush.radialGradient(
+                listOf(
+                  MaterialTheme.colorScheme.primary.copy(alpha = 0.25f),
+                  Color.Transparent
+                )
+              )
+            )
+            .border(BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)), CircleShape),
+          contentAlignment = Alignment.Center
+        ) {
+          Image(
+            painter = painterResource(R.drawable.ic_launcher_nobg),
+            contentDescription = null,
+            modifier = Modifier.size(32.dp)
+          )
+        }
+      }
+
+      // Now Playing Mini Live Strip (if audio is active)
+      if (mediaMetadata != null) {
+        Row(
+          modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(14.dp))
+            .background(MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.7f))
+            .border(
+              BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)),
+              RoundedCornerShape(14.dp)
+            )
+            .clickable(onClick = onNowPlayingClick)
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+          verticalAlignment = Alignment.CenterVertically,
+          horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+          if (isPlaying) {
+            PlayingIndicator(
+              color = MaterialTheme.colorScheme.primary,
+              modifier = Modifier.height(18.dp)
+            )
+          } else {
+            Icon(
+              painter = painterResource(R.drawable.play),
+              contentDescription = null,
+              tint = MaterialTheme.colorScheme.primary,
+              modifier = Modifier.size(18.dp)
+            )
+          }
+
+          Column(modifier = Modifier.weight(1f)) {
+            Text(
+              text = mediaMetadata.title,
+              style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+              color = MaterialTheme.colorScheme.onSurface,
+              maxLines = 1,
+              overflow = TextOverflow.Ellipsis
+            )
+            Text(
+              text = mediaMetadata.artists.joinToString { it.name },
+              style = MaterialTheme.typography.labelSmall,
+              color = MaterialTheme.colorScheme.onSurfaceVariant,
+              maxLines = 1,
+              overflow = TextOverflow.Ellipsis
+            )
+          }
+
+          Text(
+            text = "NOW PLAYING",
+            style = MaterialTheme.typography.labelSmall.copy(
+              fontWeight = FontWeight.Bold,
+              color = MaterialTheme.colorScheme.primary,
+              fontSize = 9.sp
+            )
+          )
+        }
+      }
+
+      // 3 Quick Action Station Pills
+      Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+      ) {
+        FairyQuickPill(
+          icon = "🎲",
+          title = "Magic Mix",
+          subtitle = "Instant Vibe",
+          onClick = onMagicMixClick,
+          modifier = Modifier.weight(1f)
+        )
+        FairyQuickPill(
+          icon = "🎧",
+          title = "Party Sync",
+          subtitle = "Listen Together",
+          onClick = onListenTogetherClick,
+          modifier = Modifier.weight(1f)
+        )
+        FairyQuickPill(
+          icon = "⚡",
+          title = "Speed Dial",
+          subtitle = "Top Picks",
+          onClick = onSpeedDialClick,
+          modifier = Modifier.weight(1f)
+        )
+      }
+    }
+  }
+}
+
+@Composable
+fun FairyQuickPill(
+  icon: String,
+  title: String,
+  subtitle: String,
+  onClick: () -> Unit,
+  modifier: Modifier = Modifier
+) {
+  val interactionSource = remember { MutableInteractionSource() }
+  val isPressed by interactionSource.collectIsPressedAsState()
+  val scale by animateFloatAsState(
+    targetValue = if (isPressed) 0.88f else 1.0f,
+    animationSpec = spring(
+      dampingRatio = Spring.DampingRatioMediumBouncy,
+      stiffness = Spring.StiffnessMedium
+    ),
+    label = "pill_press"
+  )
+
+  Column(
+    modifier = modifier
+      .graphicsLayer {
+        scaleX = scale
+        scaleY = scale
+      }
+      .clip(RoundedCornerShape(16.dp))
+      .background(MaterialTheme.colorScheme.surfaceContainerHighest)
+      .border(
+        BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)),
+        RoundedCornerShape(16.dp)
+      )
+      .clickable(interactionSource = interactionSource, indication = null, onClick = onClick)
+      .padding(horizontal = 8.dp, vertical = 10.dp),
+    horizontalAlignment = Alignment.CenterHorizontally,
+    verticalArrangement = Arrangement.Center
+  ) {
+    Text(text = icon, fontSize = 18.sp)
+    Spacer(modifier = Modifier.height(4.dp))
+    Text(
+      text = title,
+      style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+      color = MaterialTheme.colorScheme.onSurface,
+      maxLines = 1
+    )
+    Text(
+      text = subtitle,
+      style = MaterialTheme.typography.labelSmall.copy(
+        fontSize = 9.sp,
+        color = MaterialTheme.colorScheme.onSurfaceVariant
+      ),
+      maxLines = 1
+    )
   }
 }

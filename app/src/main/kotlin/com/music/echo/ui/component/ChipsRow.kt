@@ -7,7 +7,10 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -47,6 +50,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import echo.music.iad1tya.R
 import echo.music.iad1tya.ui.screens.OptionStats
@@ -67,31 +71,36 @@ fun <E> ChipsRow(
         .horizontalScroll(rememberScrollState())
         .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Horizontal)),
   ) {
-    Spacer(Modifier.width(12.dp))
+    Spacer(Modifier.width(16.dp))
 
     chips.forEach { (value, label) ->
       val isSelected = currentValue == value
-
-      val cornerRadius by
-        animateDpAsState(
-          targetValue = 12.dp,
-          animationSpec =
-            spring(
-              dampingRatio = Spring.DampingRatioMediumBouncy,
-              stiffness = Spring.StiffnessMedium
-            ),
-          label = "corner_radius"
-        )
+      val interactionSource = remember { MutableInteractionSource() }
+      val isPressed by interactionSource.collectIsPressedAsState()
+      val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.92f else 1.0f,
+        animationSpec = spring(
+          dampingRatio = Spring.DampingRatioMediumBouncy,
+          stiffness = Spring.StiffnessMedium
+        ),
+        label = "chip_scale"
+      )
 
       FilterChip(
-        label = { Text(label) },
+        interactionSource = interactionSource,
+        label = {
+          Text(
+            text = label,
+            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+          )
+        },
         selected = isSelected,
         colors =
           FilterChipDefaults.filterChipColors(
             containerColor = containerColor,
-            selectedContainerColor = MaterialTheme.colorScheme.onSurface,
-            selectedLabelColor = MaterialTheme.colorScheme.surface,
-            selectedLeadingIconColor = MaterialTheme.colorScheme.surface
+            selectedContainerColor = MaterialTheme.colorScheme.primary,
+            selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+            selectedLeadingIconColor = MaterialTheme.colorScheme.onPrimary
           ),
         onClick = { onValueUpdate(value) },
         leadingIcon =
@@ -106,20 +115,24 @@ fun <E> ChipsRow(
           } else {
             null
           },
-        shape = RoundedCornerShape(cornerRadius),
-        border = null,
+        shape = RoundedCornerShape(16.dp),
+        border = if (isSelected) {
+          BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.8f))
+        } else {
+          BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f))
+        },
         modifier =
-          Modifier.animateContentSize(
-            animationSpec =
-              spring(
-                dampingRatio = Spring.DampingRatioMediumBouncy,
-                stiffness = Spring.StiffnessMedium
-              )
-          )
+          Modifier
+            .padding(horizontal = 2.dp)
+            .graphicsLayer {
+              scaleX = scale
+              scaleY = scale
+            }
       )
 
-      Spacer(Modifier.width(8.dp))
+      Spacer(Modifier.width(6.dp))
     }
+    Spacer(Modifier.width(8.dp))
   }
 }
 
