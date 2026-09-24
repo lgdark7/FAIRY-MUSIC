@@ -169,11 +169,30 @@ fun UpdateScreen(navController: NavHostController) {
             downloadProgress = workInfo.progress.getFloat("progress", 0f)
           }
           WorkInfo.State.SUCCEEDED -> {
-            isDownloading = false
-            isDownloadComplete = true
             val filePath = workInfo.outputData.getString("file_path")
-            if (filePath != null) {
-              downloadedFile = File(filePath)
+            val candidateFile = if (filePath != null) File(filePath) else null
+            if (candidateFile != null && candidateFile.exists()) {
+              val archiveInfo = context.packageManager.getPackageArchiveInfo(candidateFile.absolutePath, 0)
+              val currentCode = BuildConfig.VERSION_CODE
+              val archiveCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                archiveInfo?.longVersionCode?.toInt() ?: 0
+              } else {
+                archiveInfo?.versionCode ?: 0
+              }
+              if (archiveInfo != null && archiveCode > currentCode) {
+                isDownloading = false
+                isDownloadComplete = true
+                downloadedFile = candidateFile
+              } else {
+                candidateFile.delete()
+                isDownloading = false
+                isDownloadComplete = false
+                downloadedFile = null
+              }
+            } else {
+              isDownloading = false
+              isDownloadComplete = false
+              downloadedFile = null
             }
           }
           WorkInfo.State.FAILED -> {

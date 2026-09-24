@@ -70,10 +70,11 @@ class UpdateDownloadWorker(private val context: Context, workerParams: WorkerPar
         if (!downloadDir.exists()) {
           downloadDir.mkdirs()
         }
+        downloadDir.listFiles { f -> f.isFile && f.name.endsWith(".apk", ignoreCase = true) }?.forEach { it.delete() }
 
         val isZip = apkUrl.contains("nightly.link") || apkUrl.endsWith(".zip")
         val downloadFile =
-          if (isZip) File(downloadDir, "fairy_temp.zip") else File(downloadDir, "fairymusic.apk")
+          if (isZip) File(downloadDir, "fairy_temp.zip") else File(downloadDir, "fairymusic_${version}.apk")
         val outputStream = FileOutputStream(downloadFile)
 
         val buffer = ByteArray(8192)
@@ -126,7 +127,7 @@ class UpdateDownloadWorker(private val context: Context, workerParams: WorkerPar
 
         val finalFile =
           if (isZip) {
-            val targetApkFile = File(downloadDir, "fairymusic.apk")
+            val targetApkFile = File(downloadDir, "fairymusic_${version}.apk")
             var extracted = false
             try {
               ZipInputStream(downloadFile.inputStream()).use { zis ->
