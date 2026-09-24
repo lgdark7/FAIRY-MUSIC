@@ -5,31 +5,6 @@
   "size": "120 MB",
   "apkUrl": "https://github.com/lgdark7/FAIRY-MUSIC/releases/download/v1.0.2/FAIRY-MUSIC-v1.0.2.apk",
   "imageUrl": "https://raw.githubusercontent.com/lgdark7/FAIRY-MUSIC/main/assets/Fairy-Music.png",
-  "description": "FAIRY MUSIC v1.0.2 — Resolved Listen Together playback sync glitch, eliminated endless forward-seeking loops, fixed simultaneous multi-device party audio, and reinforced OTA update permissions.",
-  "changelog": [
-    {
-      "title": "Listen Together Sync & Stability",
-      "items": [
-        "Fixed playback glitch where songs would desync or rapidly forward/skip back and forth",
-        "Removed uncalibrated device-to-server clock skew arithmetic in position syncing",
-        "Resolved barrier deadlock so party guests start playing simultaneously when the host plays",
-        "Restricted ExoPlayer automated event broadcasting to host-only to prevent echo feedback loops",
-        "Guarded queue sync so guest queue state never ping-pongs or resets host playback"
-      ]
-    },
-    {
-      "title": "Seamless In-App OTA Updates",
-      "items": [
-        "Fully declared and retained android.permission.REQUEST_INSTALL_PACKAGES in FOSS manifest",
-        "Safe in-app package installer launch with zero crashes or forced browser redirects"
-      ]
-    },
-    {
-      "title": "Account & Login Reliability",
-      "items": [
-        "Google authentication with Chrome 128 mobile User-Agent and third-party cookie sync",
-        "NPE protection on altered YouTube account layout headers"
-      ]
-    }
-  ]
+  "description": "",
+  "changelog": []
 }
