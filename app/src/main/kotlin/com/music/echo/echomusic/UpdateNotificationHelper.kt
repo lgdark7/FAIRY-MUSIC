@@ -19,39 +19,43 @@ object UpdateNotificationHelper {
   private const val NOTIFICATION_ID = 1001
 
   fun showUpdateNotification(context: Context, versionName: String) {
-    val nm = context.getSystemService(NotificationManager::class.java)
+    try {
+      val nm = context.getSystemService(NotificationManager::class.java)
 
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-      val channel =
-        NotificationChannel(
-          CHANNEL_ID,
-          context.getString(R.string.app_updates_title),
-          NotificationManager.IMPORTANCE_DEFAULT
-        )
-      nm.createNotificationChannel(channel)
-    }
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        val channel =
+          NotificationChannel(
+            CHANNEL_ID,
+            context.getString(R.string.app_updates_title),
+            NotificationManager.IMPORTANCE_DEFAULT
+          )
+        nm?.createNotificationChannel(channel)
+      }
 
-    val apkUrl = "https://github.com/lgdark7/FAIRY-MUSIC/releases/latest"
-    val intent = Intent(Intent.ACTION_VIEW, apkUrl.toUri())
+      val apkUrl = "https://github.com/lgdark7/FAIRY-MUSIC/releases/latest"
+      val intent = Intent(Intent.ACTION_VIEW, apkUrl.toUri())
 
-    val flags = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-    val pending = PendingIntent.getActivity(context, NOTIFICATION_ID, intent, flags)
+      val flags = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+      val pending = PendingIntent.getActivity(context, NOTIFICATION_ID, intent, flags)
 
-    val notif =
-      NotificationCompat.Builder(context, CHANNEL_ID)
-        .setSmallIcon(R.drawable.ic_launcher_nobg)
-        .setContentTitle(context.getString(R.string.update_available_title))
-        .setContentText(versionName)
-        .setContentIntent(pending)
-        .setAutoCancel(true)
-        .build()
+      val notif =
+        NotificationCompat.Builder(context, CHANNEL_ID)
+          .setSmallIcon(R.drawable.ic_launcher_nobg)
+          .setContentTitle(context.getString(R.string.update_available_title))
+          .setContentText(versionName)
+          .setContentIntent(pending)
+          .setAutoCancel(true)
+          .build()
 
-    if (
-      Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
-        ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) ==
-          PackageManager.PERMISSION_GRANTED
-    ) {
-      NotificationManagerCompat.from(context).notify(NOTIFICATION_ID, notif)
+      if (
+        Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+          ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) ==
+            PackageManager.PERMISSION_GRANTED
+      ) {
+        NotificationManagerCompat.from(context).notify(NOTIFICATION_ID, notif)
+      }
+    } catch (e: Throwable) {
+      android.util.Log.e("UpdateNotification", "Failed to show update notification", e)
     }
   }
 }

@@ -110,7 +110,7 @@ fun UpdateAvailableDialog(
 
         if (changelog.isNotEmpty() || !description.isNullOrEmpty()) {
           Surface(
-            modifier = Modifier.weight(1f, fill = false),
+            modifier = Modifier.heightIn(max = 340.dp).fillMaxWidth(),
             shape = blockShape,
             color = MaterialTheme.colorScheme.surfaceContainerLow,
           ) {
