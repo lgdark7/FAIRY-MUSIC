@@ -1116,24 +1116,13 @@ class MainActivity : ComponentActivity() {
                           verticalAlignment = Alignment.CenterVertically,
                           horizontalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
-                          val logoPulseTransition = rememberInfiniteTransition(label = "logoPulse")
-                          val logoPulseAlpha by logoPulseTransition.animateFloat(
-                            initialValue = 0.35f,
-                            targetValue = 0.95f,
-                            animationSpec = infiniteRepeatable(
-                              animation = tween(2200, easing = FastOutSlowInEasing),
-                              repeatMode = RepeatMode.Reverse
-                            ),
-                            label = "logoAlpha"
-                          )
-
                           Box(
                             modifier =
                               Modifier.size(38.dp)
                                 .clip(RoundedCornerShape(10.dp))
                                 .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f))
                                 .border(
-                                  BorderStroke(1.5.dp, MaterialTheme.colorScheme.primary.copy(alpha = logoPulseAlpha)),
+                                  BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)),
                                   RoundedCornerShape(10.dp)
                                 ),
                             contentAlignment = Alignment.Center

@@ -482,7 +482,7 @@ fun SongGridItem(
         fontWeight = FontWeight.Bold,
         maxLines = 1,
         overflow = TextOverflow.Ellipsis,
-        modifier = Modifier.basicMarquee().fillMaxWidth()
+        modifier = Modifier.fillMaxWidth()
       )
     },
     subtitle = {
@@ -714,7 +714,7 @@ fun AlbumGridItem(
         fontWeight = FontWeight.Bold,
         maxLines = 1,
         overflow = TextOverflow.Ellipsis,
-        modifier = Modifier.basicMarquee().fillMaxWidth()
+        modifier = Modifier.fillMaxWidth()
       )
     },
     subtitle = {
@@ -900,7 +900,7 @@ fun PlaylistGridItem(
         fontWeight = FontWeight.Bold,
         maxLines = 1,
         overflow = TextOverflow.Ellipsis,
-        modifier = Modifier.basicMarquee().fillMaxWidth()
+        modifier = Modifier.fillMaxWidth()
       )
     },
     subtitle = {
@@ -1137,7 +1137,7 @@ fun YouTubeGridItem(
         maxLines = 1,
         overflow = TextOverflow.Ellipsis,
         textAlign = if (item is ArtistItem) TextAlign.Center else TextAlign.Start,
-        modifier = Modifier.basicMarquee().fillMaxWidth()
+        modifier = Modifier.fillMaxWidth()
       )
     },
     subtitle = {
@@ -1321,14 +1321,17 @@ fun ItemThumbnail(
     modifier = modifier.fillMaxSize().aspectRatio(thumbnailRatio).clip(shape)
   ) {
     if (albumIndex == null) {
+      val context = LocalContext.current
+      val request = remember(thumbnailUrl, forceCrop, cropAlbumArt) {
+        ImageRequest.Builder(context)
+          .data(thumbnailUrl?.resize(544, 544))
+          .memoryCachePolicy(coil3.request.CachePolicy.ENABLED)
+          .diskCachePolicy(coil3.request.CachePolicy.ENABLED)
+          .networkCachePolicy(coil3.request.CachePolicy.ENABLED)
+          .build()
+      }
       AsyncImage(
-        model =
-          ImageRequest.Builder(LocalContext.current)
-            .data(thumbnailUrl?.resize(544, 544))
-            .memoryCachePolicy(coil3.request.CachePolicy.ENABLED)
-            .diskCachePolicy(coil3.request.CachePolicy.ENABLED)
-            .networkCachePolicy(coil3.request.CachePolicy.ENABLED)
-            .build(),
+        model = request,
         contentDescription = null,
         contentScale = if (cropAlbumArt || forceCrop) ContentScale.Crop else ContentScale.Fit,
         modifier = Modifier.fillMaxWidth().clip(shape)
@@ -1389,14 +1392,17 @@ fun LocalThumbnail(
     contentAlignment = Alignment.Center,
     modifier = modifier.aspectRatio(thumbnailRatio).clip(shape)
   ) {
+    val context = LocalContext.current
+    val request = remember(thumbnailUrl, forceCrop, cropAlbumArt) {
+      ImageRequest.Builder(context)
+        .data(thumbnailUrl)
+        .memoryCachePolicy(coil3.request.CachePolicy.ENABLED)
+        .diskCachePolicy(coil3.request.CachePolicy.ENABLED)
+        .networkCachePolicy(coil3.request.CachePolicy.ENABLED)
+        .build()
+    }
     AsyncImage(
-      model =
-        ImageRequest.Builder(LocalContext.current)
-          .data(thumbnailUrl)
-          .memoryCachePolicy(coil3.request.CachePolicy.ENABLED)
-          .diskCachePolicy(coil3.request.CachePolicy.ENABLED)
-          .networkCachePolicy(coil3.request.CachePolicy.ENABLED)
-          .build(),
+      model = request,
       contentDescription = null,
       contentScale = if (cropAlbumArt || forceCrop) ContentScale.Crop else ContentScale.Fit,
       modifier = Modifier.fillMaxSize()

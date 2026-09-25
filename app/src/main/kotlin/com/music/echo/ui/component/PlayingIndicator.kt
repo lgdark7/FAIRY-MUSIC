@@ -10,10 +10,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Icon
@@ -23,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
@@ -77,24 +75,27 @@ fun PlayingIndicator(
   )
 
   val heights = listOf(bar1, bar2, bar3, bar4)
+  val activeBars = bars.coerceIn(1, 4)
+  val spacing = 4.dp
+  val totalWidth = (barWidth * activeBars) + (spacing * (activeBars - 1))
 
-  Row(
-    horizontalArrangement = Arrangement.spacedBy(4.dp),
-    verticalAlignment = Alignment.Bottom,
-    modifier = modifier,
+  Canvas(
+    modifier = modifier.height(24.dp).width(totalWidth)
   ) {
-    heights.take(bars.coerceAtMost(4)).forEach { heightFraction ->
-      Canvas(
-        modifier = Modifier.fillMaxHeight().width(barWidth),
-      ) {
-        val h = heightFraction * size.height
-        drawRoundRect(
-          color = color,
-          topLeft = Offset(x = 0f, y = size.height - h),
-          size = size.copy(height = h),
-          cornerRadius = CornerRadius(cornerRadius.toPx()),
-        )
-      }
+    val barWidthPx = barWidth.toPx()
+    val spacingPx = spacing.toPx()
+    val cornerPx = cornerRadius.toPx()
+
+    for (i in 0 until activeBars) {
+      val fraction = heights.getOrElse(i) { 0.5f }
+      val h = fraction * size.height
+      val x = i * (barWidthPx + spacingPx)
+      drawRoundRect(
+        color = color,
+        topLeft = Offset(x = x, y = size.height - h),
+        size = Size(width = barWidthPx, height = h),
+        cornerRadius = CornerRadius(cornerPx),
+      )
     }
   }
 }

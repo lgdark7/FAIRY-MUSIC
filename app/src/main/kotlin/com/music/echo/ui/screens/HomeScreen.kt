@@ -982,8 +982,7 @@ fun HomeScreen(
                 ?.let { items ->
                   item(key = "speed_dial_title") {
                     NavigationTitle(
-                      title = stringResource(R.string.speed_dial),
-                      modifier = Modifier.animateItem()
+                      title = stringResource(R.string.speed_dial)
                     )
                   }
 
@@ -1001,7 +1000,7 @@ fun HomeScreen(
                       )
 
                     Column(
-                      modifier = Modifier.fillMaxWidth().animateItem(),
+                      modifier = Modifier.fillMaxWidth(),
                     ) {
                       HorizontalPager(
                         state = pagerState,
@@ -1178,16 +1177,16 @@ fun HomeScreen(
                     title = playlist.title,
                     label = lastUpdatedStr,
                     onClick = { navController.navigate("local_playlist/${playlist.id}") },
-                    modifier = Modifier.animateItem()
+                    modifier = Modifier
                   )
                 }
                 item(key = "ai_recommendation_list") {
+                  val distinctSongs = remember(songs) { songs.distinctBy { it.id } }
                   LazyRow(
                     contentPadding = PaddingValues(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.animateItem()
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                   ) {
-                    items(items = songs.distinctBy { it.id }, key = { it.id }) { songObj ->
+                    items(items = distinctSongs, key = { it.id }) { songObj ->
                       localGridItem(songObj)
                     }
                   }
@@ -1200,13 +1199,12 @@ fun HomeScreen(
                 ?.let { quickPicks ->
                   item(key = "quick_picks_title") {
                     NavigationTitle(
-                      title = stringResource(R.string.quick_picks),
-                      modifier = Modifier.animateItem()
+                      title = stringResource(R.string.quick_picks)
                     )
                   }
 
                   item(key = "quick_picks_list") {
-                    val distinctQuickPicks = quickPicks.distinctBy { it.id }
+                    val distinctQuickPicks = remember(quickPicks) { quickPicks.distinctBy { it.id } }
                     val configuration = LocalConfiguration.current
                     val heroWidth = configuration.screenWidthDp.dp - 32.dp
                     HorizontalCenteredHeroCarousel(
@@ -1214,12 +1212,11 @@ fun HomeScreen(
                       maxItemWidth = heroWidth,
                       itemSpacing = 8.dp,
                       contentPadding = PaddingValues(horizontal = 16.dp),
-                      modifier = Modifier.fillMaxWidth().height(290.dp).animateItem()
+                      modifier = Modifier.fillMaxWidth().height(290.dp)
                     ) { index ->
                       val originalSong = distinctQuickPicks[index]
-                      val song by
-                        database.song(originalSong.id).collectAsState(initial = originalSong)
-                      val isActive = song!!.id == mediaMetadata?.id
+                      val song = originalSong
+                      val isActive = song.id == mediaMetadata?.id
 
                       Box(
                         modifier =
@@ -1236,7 +1233,7 @@ fun HomeScreen(
                                   playerConnection.togglePlayPause()
                                 } else {
                                   playerConnection.playQueue(
-                                    YouTubeQueue.radio(song!!.toMediaMetadata())
+                                    YouTubeQueue.radio(song.toMediaMetadata())
                                   )
                                 }
                               },
@@ -1244,7 +1241,7 @@ fun HomeScreen(
                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                 menuState.show {
                                   SongMenu(
-                                    originalSong = song!!,
+                                    originalSong = song,
                                     navController = navController,
                                     onDismiss = menuState::dismiss
                                   )
@@ -1255,7 +1252,7 @@ fun HomeScreen(
                         AsyncImage(
                           model =
                             coil3.request.ImageRequest.Builder(LocalContext.current)
-                              .data(song!!.thumbnailUrl)
+                              .data(song.thumbnailUrl)
                               .crossfade(true)
                               .build(),
                           contentDescription = null,
@@ -1298,14 +1295,14 @@ fun HomeScreen(
 
                         Column(modifier = Modifier.align(Alignment.BottomStart).padding(16.dp)) {
                           Text(
-                            text = song!!.title,
+                            text = song.title,
                             style = MaterialTheme.typography.titleMedium,
                             color = Color.White,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                           )
                           Text(
-                            text = song!!.artists.joinToString { it.name },
+                            text = song.artists.joinToString { it.name },
                             style = MaterialTheme.typography.bodyMedium,
                             color = Color.White.copy(alpha = 0.7f),
                             maxLines = 1,
@@ -1323,18 +1320,17 @@ fun HomeScreen(
                 ?.let { playlists ->
                   item(key = "community_playlists_title") {
                     NavigationTitle(
-                      title = stringResource(R.string.from_the_community),
-                      modifier = Modifier.animateItem()
+                      title = stringResource(R.string.from_the_community)
                     )
                   }
 
                   item(key = "community_playlists_content") {
+                    val distinctPlaylists = remember(playlists) { playlists.distinctBy { it.playlist.id } }
                     LazyRow(
                       contentPadding = PaddingValues(horizontal = 16.dp),
-                      horizontalArrangement = Arrangement.spacedBy(16.dp),
-                      modifier = Modifier.animateItem()
+                      horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                      items(playlists.distinctBy { it.playlist.id }, key = { it.playlist.id }) {
+                      items(distinctPlaylists, key = { it.playlist.id }) {
                         item ->
                         CommunityPlaylistCard(
                           item = item,
@@ -1416,12 +1412,12 @@ fun HomeScreen(
                 ?.let { keepListening ->
                   item(key = "keep_listening_title") {
                     NavigationTitle(
-                      title = stringResource(R.string.keep_listening),
-                      modifier = Modifier.animateItem()
+                      title = stringResource(R.string.keep_listening)
                     )
                   }
 
                   item(key = "keep_listening_list") {
+                    val distinctKeepListening = remember(keepListening) { keepListening.distinctBy { it.id } }
                     val rows = if (keepListening.size > 6) 2 else 1
                     LazyHorizontalGrid(
                       state = rememberLazyGridState(),
@@ -1439,9 +1435,8 @@ fun HomeScreen(
                                   MaterialTheme.typography.bodyMedium.lineHeight.toDp() * 2
                               }) * rows
                           )
-                          .animateItem()
                     ) {
-                      items(keepListening.distinctBy { it.id }, key = { it.id }) {
+                      items(distinctKeepListening, key = { it.id }) {
                         localGridItem(it)
                       }
                     }
@@ -1482,8 +1477,7 @@ fun HomeScreen(
                           )
                         }
                       },
-                      onClick = { navController.navigate("account") },
-                      modifier = Modifier.animateItem()
+                      onClick = { navController.navigate("account") }
                     )
                   }
 
@@ -1492,8 +1486,7 @@ fun HomeScreen(
                       contentPadding =
                         WindowInsets.systemBars
                           .only(WindowInsetsSides.Horizontal)
-                          .asPaddingValues(),
-                      modifier = Modifier.animateItem()
+                          .asPaddingValues()
                     ) {
                       items(
                         items = accountPlaylists.distinctBy { it.id },
@@ -1513,7 +1506,6 @@ fun HomeScreen(
                     val forgottenFavoritesTitle = stringResource(R.string.forgotten_favorites)
                     NavigationTitle(
                       title = forgottenFavoritesTitle,
-                      modifier = Modifier.animateItem(),
                       onPlayAllClick = {
                         playerConnection.playQueue(
                           ListQueue(
@@ -1526,6 +1518,7 @@ fun HomeScreen(
                   }
 
                   item(key = "forgotten_favorites_list") {
+                    val distinctForgotten = remember(forgottenFavorites) { forgottenFavorites.distinctBy { it.id } }
                     val rows = min(4, forgottenFavorites.size)
                     LazyHorizontalGrid(
                       state = forgottenFavoritesLazyGridState,
@@ -1536,19 +1529,18 @@ fun HomeScreen(
                           .asPaddingValues(),
                       flingBehavior =
                         rememberSnapFlingBehavior(forgottenFavoritesSnapLayoutInfoProvider),
-                      modifier = Modifier.fillMaxWidth().height(ListItemHeight * rows).animateItem()
+                      modifier = Modifier.fillMaxWidth().height(ListItemHeight * rows)
                     ) {
                       itemsIndexed(
-                        items = forgottenFavorites.distinctBy { it.id },
+                        items = distinctForgotten,
                         key = { _, it -> it.id }
                       ) { index, originalSong ->
-                        val song by
-                          database.song(originalSong.id).collectAsState(initial = originalSong)
+                        val song = originalSong
 
                         SongListItem(
-                          song = song!!,
+                          song = song,
                           showInLibraryIcon = true,
-                          isActive = song!!.id == mediaMetadata?.id,
+                          isActive = song.id == mediaMetadata?.id,
                           isPlaying = isPlaying,
                           isSwipeable = false,
                           shape = listItemShape(index = index % rows, count = rows),
@@ -1558,7 +1550,7 @@ fun HomeScreen(
                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                 menuState.show {
                                   SongMenu(
-                                    originalSong = song!!,
+                                    originalSong = song,
                                     navController = navController,
                                     onDismiss = menuState::dismiss
                                   )
@@ -1575,11 +1567,11 @@ fun HomeScreen(
                             Modifier.width(horizontalLazyGridItemWidth)
                               .combinedClickable(
                                 onClick = {
-                                  if (song!!.id == mediaMetadata?.id) {
+                                  if (song.id == mediaMetadata?.id) {
                                     playerConnection.togglePlayPause()
                                   } else {
                                     playerConnection.playQueue(
-                                      YouTubeQueue.radio(song!!.toMediaMetadata())
+                                      YouTubeQueue.radio(song.toMediaMetadata())
                                     )
                                   }
                                 },
@@ -1587,7 +1579,7 @@ fun HomeScreen(
                                   haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                   menuState.show {
                                     SongMenu(
-                                      originalSong = song!!,
+                                      originalSong = song,
                                       navController = navController,
                                       onDismiss = menuState::dismiss
                                     )
@@ -1626,18 +1618,17 @@ fun HomeScreen(
                         is Artist -> navController.navigate("artist/${recTitle.id}")
                         is Playlist -> {}
                       }
-                    },
-                    modifier = Modifier.animateItem()
+                    }
                   )
                 }
 
                 item(key = "similar_to_list_${section.index}") {
+                  val distinctRecItems = remember(recommendation.items) { recommendation.items.distinctBy { it.id } }
                   LazyRow(
                     contentPadding =
-                      WindowInsets.systemBars.only(WindowInsetsSides.Horizontal).asPaddingValues(),
-                    modifier = Modifier.animateItem()
+                      WindowInsets.systemBars.only(WindowInsetsSides.Horizontal).asPaddingValues()
                   ) {
-                    items(recommendation.items.distinctBy { it.id }, key = { it.id }) { item ->
+                    items(distinctRecItems, key = { it.id }) { item ->
                       ytGridItem(item)
                     }
                   }
@@ -1692,14 +1683,14 @@ fun HomeScreen(
                             )
                           )
                         }
-                      } else null,
-                    modifier = Modifier.animateItem()
+                      } else null
                   )
                 }
 
                 if (isSongsOnlySection) {
 
                   item(key = "home_section_list_${section.index}") {
+                    val distinctSectionSongs = remember(sectionSongs) { sectionSongs.distinctBy { it.id } }
                     LazyHorizontalGrid(
                       state = rememberLazyGridState(),
                       rows = GridCells.Fixed(4),
@@ -1707,10 +1698,10 @@ fun HomeScreen(
                         WindowInsets.systemBars
                           .only(WindowInsetsSides.Horizontal)
                           .asPaddingValues(),
-                      modifier = Modifier.fillMaxWidth().height(ListItemHeight * 4).animateItem()
+                      modifier = Modifier.fillMaxWidth().height(ListItemHeight * 4)
                     ) {
                       itemsIndexed(
-                        items = sectionSongs.distinctBy { it.id },
+                        items = distinctSectionSongs,
                         key = { _, it -> it.id }
                       ) { index, song ->
                         YouTubeListItem(
@@ -1718,6 +1709,15 @@ fun HomeScreen(
                           isActive = song.id == mediaMetadata?.id,
                           isPlaying = isPlaying,
                           isSwipeable = false,
+                          badges = {
+                            if (song.explicit) {
+                              Icon(
+                                painter = painterResource(R.drawable.explicit),
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp).padding(end = 2.dp)
+                              )
+                            }
+                          },
                           shape = listItemShape(index = index % 4, count = 4),
                           trailingContent = {
                             IconButton(
@@ -1767,14 +1767,14 @@ fun HomeScreen(
                 } else {
 
                   item(key = "home_section_list_${section.index}") {
+                    val distinctSectionItems = remember(sectionData.items) { sectionData.items.distinctBy { it.id } }
                     LazyRow(
                       contentPadding =
                         WindowInsets.systemBars
                           .only(WindowInsetsSides.Horizontal)
-                          .asPaddingValues(),
-                      modifier = Modifier.animateItem()
+                          .asPaddingValues()
                     ) {
-                      items(sectionData.items.distinctBy { it.id }, key = { it.id }) { item ->
+                      items(distinctSectionItems, key = { it.id }) { item ->
                         ytGridItem(item)
                       }
                     }
@@ -1787,18 +1787,18 @@ fun HomeScreen(
                 item(key = "mood_and_genres_title") {
                   NavigationTitle(
                     title = stringResource(R.string.mood_and_genres),
-                    onClick = { navController.navigate("mood_and_genres") },
-                    modifier = Modifier.animateItem()
+                    onClick = { navController.navigate("mood_and_genres") }
                   )
                 }
                 item(key = "mood_and_genres_list") {
+                  val distinctMoods = remember(moodAndGenres) { moodAndGenres.distinctBy { it.title } }
                   LazyHorizontalGrid(
                     rows = GridCells.Fixed(4),
                     contentPadding = PaddingValues(6.dp),
                     modifier =
-                      Modifier.height((MoodAndGenresButtonHeight + 12.dp) * 4 + 12.dp).animateItem()
+                      Modifier.height((MoodAndGenresButtonHeight + 12.dp) * 4 + 12.dp)
                   ) {
-                    items(moodAndGenres.distinctBy { it.title }, key = { it.title }) {
+                    items(distinctMoods, key = { it.title }) {
                       MoodAndGenresButton(
                         title = it.title,
                         onClick = {
@@ -1820,7 +1820,7 @@ fun HomeScreen(
           isLoading || homePage?.continuation != null && homePage?.sections?.isNotEmpty() == true
         ) {
           item(key = "loading_shimmer") {
-            ShimmerHost(modifier = Modifier.animateItem()) {
+            ShimmerHost {
               // 1. Quick Picks Skeleton
               Row(
                 modifier =
