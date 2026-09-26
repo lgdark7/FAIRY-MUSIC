@@ -1,16 +1,15 @@
 {
-  "version": "1.0.6",
-  "versionCode": 7,
+  "version": "1.0.7",
+  "versionCode": 8,
   "releaseDate": "September 26, 2026",
   "size": "121 MB",
-  "apkUrl": "https://github.com/lgdark7/FAIRY-MUSIC/releases/download/v1.0.6/FAIRY-MUSIC-v1.0.6.apk",
+  "apkUrl": "https://github.com/lgdark7/FAIRY-MUSIC/releases/download/v1.0.7/FAIRY-MUSIC-v1.0.7.apk",
   "imageUrl": "https://raw.githubusercontent.com/lgdark7/FAIRY-MUSIC/main/assets/Fairy-Music.png",
-  "description": "Fix Play Together: Zero skips, zero mid-song jumps, synchronized queues, and smooth party playback.",
+  "description": "Fix Play Together host song skipping: when host skips a song, guest immediately skips to the exact new song instead of replaying the previous song.",
   "changelog": [
-    "Fixed Play Together songs skipping rapidly & infinite skip loops",
-    "Fixed mid-song forward jumps by removing 10s heartbeat hard seeks and introducing smooth speed micro-adjustments",
-    "Fixed guest playback stall by ensuring ExoPlayer prepare() and playWhenReady are immediately called",
-    "Fixed host and guest playing different songs by binding synchronized queues and isolating guest controls",
-    "Disabled Automix and Silence Skip during party sessions to eliminate artificial clock drift"
+    "Fixed Play Together host song skip desync: guests now immediately transition to the new song when host skips",
+    "Prevented fake in-track SEEK(0ms) calls during track transitions which previously caused the old song to restart from the beginning",
+    "Enabled persistent keystore with v1 JAR + v2 APK signature schemes to eliminate 'Can't install app / There's a problem with the app file' on different devices",
+    "Added immediate requestSync fallback if guest receives remote skip without a matching queue window"
   ]
 }

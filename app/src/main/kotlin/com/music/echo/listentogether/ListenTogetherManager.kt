@@ -188,7 +188,8 @@ constructor(
 
       override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
         try {
-          if (!canControlMusic || isSyncing || isApplyingRemoteAction || !isInRoom) return
+          // Do not let isSyncing block media item transition on host!
+          if (!canControlMusic || isApplyingRemoteAction || !isInRoom) return
           if (mediaItem == null) return
 
           val connection = playerConnection ?: return
@@ -200,9 +201,10 @@ constructor(
           lastSyncedTrackId = trackId
           lastSyncedIsPlaying = player.playWhenReady
 
-          player.currentMetadata?.let { metadata ->
+          val metadata = mediaItem.metadata ?: player.currentMetadata ?: connection.mediaMetadata.value
+          if (metadata != null) {
             Timber.tag(TAG).d("Host sending track change: ${metadata.title}")
-            sendTrackChange(metadata)
+            sendTrackChangeInternal(metadata)
           }
         } catch (e: Exception) {
           Timber.tag(TAG).e(e, "Error in onMediaItemTransition")
@@ -217,8 +219,10 @@ constructor(
         try {
           if (!canControlMusic || isSyncing || isApplyingRemoteAction || !isInRoom) return
 
-          if (reason == Player.DISCONTINUITY_REASON_SEEK) {
-            Timber.tag(TAG).d("Host sending SEEK to ${newPosition.positionMs}")
+          // ONLY broadcast SEEK if it is within the same media item!
+          // If mediaItemIndex changed, this is a track skip, and onMediaItemTransition handles broadcasting the new track.
+          if (reason == Player.DISCONTINUITY_REASON_SEEK && oldPosition.mediaItemIndex == newPosition.mediaItemIndex) {
+            Timber.tag(TAG).d("Host sending in-track SEEK to ${newPosition.positionMs}")
             sendPlaybackActionWithSync {
               client.sendPlaybackAction(PlaybackActions.SEEK, position = newPosition.positionMs)
             }
@@ -271,9 +275,15 @@ constructor(
 
     connection.onSkipPrevious = {
       try {
-        if (canControlMusic && !isApplyingRemoteAction && !isSyncing) {
-          Timber.tag(TAG).d("Skip Previous triggered")
-          sendPlaybackActionWithSync { client.sendPlaybackAction(PlaybackActions.SKIP_PREV) }
+        if (canControlMusic && !isApplyingRemoteAction) {
+          Timber.tag(TAG).d("Skip Previous triggered on Host")
+          val p = connection.player
+          val meta = p.currentMediaItem?.metadata ?: p.currentMetadata ?: connection.mediaMetadata.value
+          if (meta != null && meta.id != lastSyncedTrackId) {
+            lastSyncedTrackId = meta.id
+            lastSyncedIsPlaying = p.playWhenReady
+            sendTrackChangeInternal(meta)
+          }
         }
       } catch (e: Exception) {
         Timber.tag(TAG).e(e, "Error in onSkipPrevious")
@@ -281,9 +291,15 @@ constructor(
     }
     connection.onSkipNext = {
       try {
-        if (canControlMusic && !isApplyingRemoteAction && !isSyncing) {
-          Timber.tag(TAG).d("Skip Next triggered")
-          sendPlaybackActionWithSync { client.sendPlaybackAction(PlaybackActions.SKIP_NEXT) }
+        if (canControlMusic && !isApplyingRemoteAction) {
+          Timber.tag(TAG).d("Skip Next triggered on Host")
+          val p = connection.player
+          val meta = p.currentMediaItem?.metadata ?: p.currentMetadata ?: connection.mediaMetadata.value
+          if (meta != null && meta.id != lastSyncedTrackId) {
+            lastSyncedTrackId = meta.id
+            lastSyncedIsPlaying = p.playWhenReady
+            sendTrackChangeInternal(meta)
+          }
         }
       } catch (e: Exception) {
         Timber.tag(TAG).e(e, "Error in onSkipNext")
@@ -919,6 +935,9 @@ constructor(
                 player.prepare()
               }
               player.playWhenReady = true
+            } else {
+              Timber.tag(TAG).d("Guest has no next media item, requesting sync from host")
+              requestSync()
             }
           } finally {
             connection.allowInternalSync = false
@@ -928,15 +947,16 @@ constructor(
           Timber.tag(TAG).d("Remote SKIP_PREV")
           connection.allowInternalSync = true
           try {
-            if (player.currentPosition > 3000 || !player.hasPreviousMediaItem()) {
-              player.seekTo(0)
-            } else {
+            if (player.hasPreviousMediaItem()) {
               player.seekToPreviousMediaItem()
+              if (player.playbackState == Player.STATE_IDLE || player.playbackState == Player.STATE_ENDED) {
+                player.prepare()
+              }
+              player.playWhenReady = true
+            } else {
+              Timber.tag(TAG).d("Guest has no previous media item, requesting sync from host")
+              requestSync()
             }
-            if (player.playbackState == Player.STATE_IDLE || player.playbackState == Player.STATE_ENDED) {
-              player.prepare()
-            }
-            player.playWhenReady = true
           } finally {
             connection.allowInternalSync = false
           }
@@ -1286,7 +1306,8 @@ constructor(
         Timber.tag(TAG).e(e, "Failed to get current title")
         null
       }
-    val currentPos = playerConnection?.player?.currentPosition ?: 0L
+    val rawPos = playerConnection?.player?.currentPosition ?: 0L
+    val currentPos = if (rawPos < 3000L || rawPos >= durationMs) 0L else rawPos
 
     sendPlaybackActionWithSync {
       client.sendPlaybackAction(

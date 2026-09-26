@@ -33,8 +33,8 @@ android {
     applicationId = "com.fairymusic.app"
     minSdk = 26
     targetSdk = 36
-    versionCode = 7
-    versionName = "1.0.6"
+    versionCode = 8
+    versionName = "1.0.7"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     vectorDrawables.useSupportLibrary = true
@@ -144,7 +144,10 @@ android {
       keyAlias = "androiddebugkey"
       keyPassword = "android"
       storePassword = "android"
-      storeFile = file("${System.getProperty("user.home")}/.android/debug.keystore")
+      val persistentKs = file("persistent-debug.keystore")
+      storeFile = if (persistentKs.exists()) persistentKs else file("${System.getProperty("user.home")}/.android/debug.keystore")
+      enableV1Signing = true
+      enableV2Signing = true
     }
   }
 
