@@ -346,7 +346,7 @@ class MusicService : MediaLibraryService(), Player.Listener, PlaybackStatsListen
   private lateinit var audioQuality: echo.music.iad1tya.constants.AudioQuality
   private lateinit var ipVersion: IpVersion
 
-  private var currentQueue: Queue = EmptyQueue
+  var currentQueue: Queue = EmptyQueue
   var queueTitle: String? = null
 
   val currentMediaMetadata = MutableStateFlow<echo.music.iad1tya.models.MediaMetadata?>(null)
@@ -875,21 +875,27 @@ class MusicService : MediaLibraryService(), Player.Listener, PlaybackStatsListen
         playerStereoWideners.values.forEach { it.width = width }
       }
 
-    dataStore.data
-      .map {
-        ((try {
-          it[SkipSilenceKey]
-        } catch (e: Exception) {
-          null
-        }) ?: false) to
+    combine(
+      dataStore.data
+        .map {
           ((try {
-            it[SkipSilenceInstantKey]
+            it[SkipSilenceKey]
           } catch (e: Exception) {
             null
-          }) ?: false)
-      }
-      .distinctUntilChanged()
-      .collectLatest(scope) { (skipSilence, instantSkip) ->
+          }) ?: false) to
+            ((try {
+              it[SkipSilenceInstantKey]
+            } catch (e: Exception) {
+              null
+            }) ?: false)
+        },
+      listenTogetherManager.roomState
+    ) { (skipSilence, instantSkip), roomState ->
+      val inRoom = roomState != null
+      (skipSilence && !inRoom) to (instantSkip && !inRoom)
+    }
+    .distinctUntilChanged()
+    .collectLatest(scope) { (skipSilence, instantSkip) ->
         player.skipSilenceEnabled = skipSilence
         secondaryPlayer?.skipSilenceEnabled = skipSilence
 
@@ -995,17 +1001,22 @@ class MusicService : MediaLibraryService(), Player.Listener, PlaybackStatsListen
       .distinctUntilChanged()
       .collect(scope) { YTPlayerUtils.forceOpusEnabled = it }
 
-    dataStore.data
-      .map {
-        (try {
-          it[AutomixCrossfadeKey]
-        } catch (e: Exception) {
-          null
-        }) ?: false
-      }
-      .distinctUntilChanged()
-      .collect(scope) {
-        automixEnabled = it
+    combine(
+      dataStore.data
+        .map {
+          (try {
+            it[AutomixCrossfadeKey]
+          } catch (e: Exception) {
+            null
+          }) ?: false
+        },
+      listenTogetherManager.roomState
+    ) { enabled, roomState ->
+      enabled && roomState == null
+    }
+    .distinctUntilChanged()
+    .collect(scope) {
+      automixEnabled = it
         if (it) {
           prepareAutomixForCurrentPair()
           scheduleCrossfade()

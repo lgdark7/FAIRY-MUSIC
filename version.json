@@ -1,10 +1,16 @@
 {
-  "version": "1.0.5",
-  "versionCode": 6,
-  "releaseDate": "September 25, 2026",
+  "version": "1.0.6",
+  "versionCode": 7,
+  "releaseDate": "September 26, 2026",
   "size": "121 MB",
-  "apkUrl": "https://github.com/lgdark7/FAIRY-MUSIC/releases/download/v1.0.5/FAIRY-MUSIC-v1.0.5.apk",
+  "apkUrl": "https://github.com/lgdark7/FAIRY-MUSIC/releases/download/v1.0.6/FAIRY-MUSIC-v1.0.6.apk",
   "imageUrl": "https://raw.githubusercontent.com/lgdark7/FAIRY-MUSIC/main/assets/Fairy-Music.png",
-  "description": "",
-  "changelog": []
+  "description": "Fix Play Together: Zero skips, zero mid-song jumps, synchronized queues, and smooth party playback.",
+  "changelog": [
+    "Fixed Play Together songs skipping rapidly & infinite skip loops",
+    "Fixed mid-song forward jumps by removing 10s heartbeat hard seeks and introducing smooth speed micro-adjustments",
+    "Fixed guest playback stall by ensuring ExoPlayer prepare() and playWhenReady are immediately called",
+    "Fixed host and guest playing different songs by binding synchronized queues and isolating guest controls",
+    "Disabled Automix and Silence Skip during party sessions to eliminate artificial clock drift"
+  ]
 }

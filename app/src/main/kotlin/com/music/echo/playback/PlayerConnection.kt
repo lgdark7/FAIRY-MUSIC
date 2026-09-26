@@ -213,6 +213,10 @@ class PlayerConnection(
   }
 
   fun playQueue(queue: Queue) {
+    if (!allowInternalSync && shouldBlockPlaybackChanges?.invoke() == true) {
+      Timber.tag(TAG).d("playQueue blocked - Listen Together guest")
+      return
+    }
     if (!playerReadinessFlow.value) {
       Timber.tag(TAG).w("playQueue called before player ready; delegating to service")
     }
@@ -298,6 +302,10 @@ class PlayerConnection(
   }
 
   fun togglePlayPause() {
+    if (!allowInternalSync && shouldBlockPlaybackChanges?.invoke() == true) {
+      Timber.tag(TAG).d("togglePlayPause blocked - Listen Together guest")
+      return
+    }
     try {
       val castHandler = service.castConnectionHandler
       if (castHandler?.isCasting?.value == true) {
@@ -315,6 +323,10 @@ class PlayerConnection(
   }
 
   fun play() {
+    if (!allowInternalSync && shouldBlockPlaybackChanges?.invoke() == true) {
+      Timber.tag(TAG).d("play blocked - Listen Together guest")
+      return
+    }
     try {
       val castHandler = service.castConnectionHandler
       if (castHandler?.isCasting?.value == true) {
@@ -331,6 +343,10 @@ class PlayerConnection(
   }
 
   fun pause() {
+    if (!allowInternalSync && shouldBlockPlaybackChanges?.invoke() == true) {
+      Timber.tag(TAG).d("pause blocked - Listen Together guest")
+      return
+    }
     try {
       val castHandler = service.castConnectionHandler
       if (castHandler?.isCasting?.value == true) {
@@ -344,6 +360,10 @@ class PlayerConnection(
   }
 
   fun seekTo(position: Long) {
+    if (!allowInternalSync && shouldBlockPlaybackChanges?.invoke() == true) {
+      Timber.tag(TAG).d("seekTo blocked - Listen Together guest")
+      return
+    }
     try {
       val castHandler = service.castConnectionHandler
       if (castHandler?.isCasting?.value == true) {
@@ -357,6 +377,10 @@ class PlayerConnection(
   }
 
   fun seekToNext() {
+    if (!allowInternalSync && shouldBlockPlaybackChanges?.invoke() == true) {
+      Timber.tag(TAG).d("seekToNext blocked - Listen Together guest")
+      return
+    }
     try {
 
       val castHandler = service.castConnectionHandler
@@ -378,6 +402,10 @@ class PlayerConnection(
   var onRestartSong: (() -> Unit)? = null
 
   fun seekToPrevious() {
+    if (!allowInternalSync && shouldBlockPlaybackChanges?.invoke() == true) {
+      Timber.tag(TAG).d("seekToPrevious blocked - Listen Together guest")
+      return
+    }
     try {
 
       val castHandler = service.castConnectionHandler
