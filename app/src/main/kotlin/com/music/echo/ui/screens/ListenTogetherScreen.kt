@@ -146,7 +146,7 @@ fun ListenTogetherScreen(navController: NavController, showTopBar: Boolean = fal
 
   LaunchedEffect(listenTogetherManager) {
     if (
-      connectionState == ConnectionState.DISCONNECTED || connectionState == ConnectionState.ERROR
+      connectionState.isDisconnectedOrFailed
     ) {
       listenTogetherManager.connect()
     }
@@ -506,13 +506,12 @@ fun ListenTogetherScreen(navController: NavController, showTopBar: Boolean = fal
       },
       actions = {
         if (
-          connectionState == ConnectionState.DISCONNECTED ||
-            connectionState == ConnectionState.ERROR
+          connectionState.isDisconnectedOrFailed
         ) {
           TextButton(onClick = { listenTogetherManager.connect() }) {
             Text(stringResource(R.string.connect))
           }
-        } else if (connectionState == ConnectionState.CONNECTED) {
+        } else if (connectionState.isConnected) {
           TextButton(onClick = { listenTogetherManager.disconnect() }) {
             Text(stringResource(R.string.disconnect))
           }
@@ -605,10 +604,11 @@ private fun ConnectionStatusCard(
               .background(
                 color =
                   when (connectionState) {
-                    ConnectionState.CONNECTED -> MaterialTheme.colorScheme.onSurface
+                    ConnectionState.CONNECTED, ConnectionState.IN_ROOM -> MaterialTheme.colorScheme.onSurface
                     ConnectionState.CONNECTING,
+                    ConnectionState.AUTHENTICATING,
                     ConnectionState.RECONNECTING -> MaterialTheme.colorScheme.tertiary
-                    ConnectionState.ERROR -> MaterialTheme.colorScheme.error
+                    ConnectionState.ERROR, ConnectionState.FAILED -> MaterialTheme.colorScheme.error
                     ConnectionState.DISCONNECTED -> MaterialTheme.colorScheme.outline
                   }
               )
@@ -618,19 +618,23 @@ private fun ConnectionStatusCard(
           text =
             when (connectionState) {
               ConnectionState.CONNECTED -> stringResource(R.string.listen_together_connected)
+              ConnectionState.IN_ROOM -> "In Room"
               ConnectionState.CONNECTING -> stringResource(R.string.listen_together_connecting)
+              ConnectionState.AUTHENTICATING -> "Authenticating…"
               ConnectionState.RECONNECTING -> stringResource(R.string.listen_together_reconnecting)
               ConnectionState.ERROR -> stringResource(R.string.listen_together_error)
+              ConnectionState.FAILED -> "Connection Failed"
               ConnectionState.DISCONNECTED -> stringResource(R.string.listen_together_disconnected)
             },
           style = MaterialTheme.typography.titleMedium,
           fontWeight = FontWeight.Bold,
           color =
             when (connectionState) {
-              ConnectionState.CONNECTED -> MaterialTheme.colorScheme.onSurface
+              ConnectionState.CONNECTED, ConnectionState.IN_ROOM -> MaterialTheme.colorScheme.onSurface
               ConnectionState.CONNECTING,
+              ConnectionState.AUTHENTICATING,
               ConnectionState.RECONNECTING -> MaterialTheme.colorScheme.tertiary
-              ConnectionState.ERROR -> MaterialTheme.colorScheme.error
+              ConnectionState.ERROR, ConnectionState.FAILED -> MaterialTheme.colorScheme.error
               ConnectionState.DISCONNECTED -> MaterialTheme.colorScheme.onSurfaceVariant
             }
         )
@@ -638,6 +642,7 @@ private fun ConnectionStatusCard(
 
       if (
         connectionState == ConnectionState.CONNECTING ||
+          connectionState == ConnectionState.AUTHENTICATING ||
           connectionState == ConnectionState.RECONNECTING
       ) {
         Spacer(modifier = Modifier.height(12.dp))
@@ -651,8 +656,7 @@ private fun ConnectionStatusCard(
 
       Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
         if (
-          connectionState == ConnectionState.DISCONNECTED ||
-            connectionState == ConnectionState.ERROR
+          connectionState.isDisconnectedOrFailed
         ) {
           Button(
             onClick = onConnect,

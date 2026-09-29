@@ -96,6 +96,9 @@ constructor(
 
   private var bufferCompleteReceivedForTrack: String? = null
 
+  private var currentRevision: Long = 0L
+  private var latestAppliedRevision: Long = 0L
+
   val connectionState = client.connectionState
   val roomState = client.roomState
   val role = client.role
@@ -667,6 +670,9 @@ constructor(
   }
 
   private fun cleanup() {
+    Timber.tag(TAG).i("[LT][ROOM] Cleaning up ListenTogetherManager")
+    currentRevision = 0L
+    latestAppliedRevision = 0L
     if (lastRole == RoomRole.GUEST) {
       restoreGuestMuteState()
     }
@@ -1454,8 +1460,16 @@ constructor(
           playerConnection?.player?.let { player ->
             if (player.playWhenReady && player.playbackState == Player.STATE_READY) {
               val pos = player.currentPosition
-              Timber.tag(TAG).d("Host heartbeat: sending PLAY at pos $pos")
-              client.sendPlaybackAction(PlaybackActions.PLAY, position = pos)
+              val rev = ++currentRevision
+              val now = System.currentTimeMillis()
+              Timber.tag(TAG).d("[LT][SYNC] Host heartbeat: sending PLAY pos=$pos rev=$rev")
+              client.sendPlaybackAction(
+                PlaybackActions.PLAY,
+                trackId = player.currentMediaItem?.mediaId,
+                position = pos,
+                serverTime = now,
+                revision = rev
+              )
             }
           }
         }

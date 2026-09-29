@@ -170,6 +170,7 @@ class MessageCodec(
             .setInsertNext(payload.insertNext ?: false)
             .setVolume(payload.volume ?: 1f)
             .setServerTime(payload.serverTime ?: 0)
+            .setRevision(payload.revision ?: 0)
 
         payload.trackId?.let { builder.setTrackId(it) }
         payload.trackInfo?.let { builder.setTrackInfo(trackInfoToProto(it)) }
@@ -293,7 +294,8 @@ class MessageCodec(
           queue = pb.queueList.map { protoToTrackInfo(it) },
           queueTitle = pb.queueTitle.let { if (it.isEmpty()) null else it },
           volume = pb.volume.let { if (it <= 0) null else it },
-          serverTime = pb.serverTime.let { if (it <= 0) null else it }
+          serverTime = pb.serverTime.let { if (it <= 0) null else it },
+          revision = pb.revision.let { if (it <= 0) null else it }
         )
       }
       MessageTypes.BUFFER_WAIT -> {
@@ -324,7 +326,8 @@ class MessageCodec(
           position = pb.position,
           lastUpdate = pb.lastUpdate,
           queue = pb.queueList.map { protoToTrackInfo(it) },
-          volume = pb.volume.let { if (it <= 0) null else it }
+          volume = pb.volume.let { if (it <= 0) null else it },
+          revision = pb.revision
         )
       }
       MessageTypes.RECONNECTED -> {
@@ -408,7 +411,8 @@ class MessageCodec(
       lastUpdate = proto.lastUpdate,
       volume = proto.volume,
       queue = proto.queueList.map { protoToTrackInfo(it) },
-      allowParticipantControl = proto.allowParticipantControl
+      allowParticipantControl = proto.allowParticipantControl,
+      revision = proto.revision
     )
   }
 

@@ -1269,10 +1269,11 @@ fun ListenTogetherDialog(visible: Boolean, mediaMetadata: MediaMetadata?, onDism
         shape = RoundedCornerShape(16.dp),
         color =
           when (connectionState) {
-            ConnectionState.CONNECTED -> MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
+            ConnectionState.CONNECTED, ConnectionState.IN_ROOM -> MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
             ConnectionState.CONNECTING,
+            ConnectionState.AUTHENTICATING,
             ConnectionState.RECONNECTING -> MaterialTheme.colorScheme.secondary.copy(alpha = 0.15f)
-            ConnectionState.ERROR -> MaterialTheme.colorScheme.error.copy(alpha = 0.15f)
+            ConnectionState.ERROR, ConnectionState.FAILED -> MaterialTheme.colorScheme.error.copy(alpha = 0.15f)
             ConnectionState.DISCONNECTED -> MaterialTheme.colorScheme.surfaceVariant
           }
       ) {
@@ -1290,10 +1291,11 @@ fun ListenTogetherDialog(visible: Boolean, mediaMetadata: MediaMetadata?, onDism
                   .background(
                     color =
                       when (connectionState) {
-                        ConnectionState.CONNECTED -> MaterialTheme.colorScheme.primary
+                        ConnectionState.CONNECTED, ConnectionState.IN_ROOM -> MaterialTheme.colorScheme.primary
                         ConnectionState.CONNECTING,
+                        ConnectionState.AUTHENTICATING,
                         ConnectionState.RECONNECTING -> MaterialTheme.colorScheme.secondary
-                        ConnectionState.ERROR -> MaterialTheme.colorScheme.error
+                        ConnectionState.ERROR, ConnectionState.FAILED -> MaterialTheme.colorScheme.error
                         ConnectionState.DISCONNECTED -> MaterialTheme.colorScheme.outline
                       },
                     shape = RoundedCornerShape(50)
@@ -1304,21 +1306,23 @@ fun ListenTogetherDialog(visible: Boolean, mediaMetadata: MediaMetadata?, onDism
               text =
                 when (connectionState) {
                   ConnectionState.CONNECTED -> stringResource(R.string.listen_together_connected)
+                  ConnectionState.IN_ROOM -> "In Room"
                   ConnectionState.CONNECTING -> stringResource(R.string.listen_together_connecting)
-                  ConnectionState.RECONNECTING ->
-                    stringResource(R.string.listen_together_reconnecting)
+                  ConnectionState.AUTHENTICATING -> "Authenticating…"
+                  ConnectionState.RECONNECTING -> stringResource(R.string.listen_together_reconnecting)
                   ConnectionState.ERROR -> stringResource(R.string.listen_together_error)
-                  ConnectionState.DISCONNECTED ->
-                    stringResource(R.string.listen_together_disconnected)
+                  ConnectionState.FAILED -> "Connection Failed"
+                  ConnectionState.DISCONNECTED -> stringResource(R.string.listen_together_disconnected)
                 },
               style = MaterialTheme.typography.titleMedium,
               fontWeight = FontWeight.SemiBold,
               color =
                 when (connectionState) {
-                  ConnectionState.CONNECTED -> MaterialTheme.colorScheme.primary
+                  ConnectionState.CONNECTED, ConnectionState.IN_ROOM -> MaterialTheme.colorScheme.primary
                   ConnectionState.CONNECTING,
+                  ConnectionState.AUTHENTICATING,
                   ConnectionState.RECONNECTING -> MaterialTheme.colorScheme.secondary
-                  ConnectionState.ERROR -> MaterialTheme.colorScheme.error
+                  ConnectionState.ERROR, ConnectionState.FAILED -> MaterialTheme.colorScheme.error
                   ConnectionState.DISCONNECTED -> MaterialTheme.colorScheme.onSurfaceVariant
                 }
             )
@@ -1326,6 +1330,7 @@ fun ListenTogetherDialog(visible: Boolean, mediaMetadata: MediaMetadata?, onDism
 
           if (
             connectionState == ConnectionState.CONNECTING ||
+              connectionState == ConnectionState.AUTHENTICATING ||
               connectionState == ConnectionState.RECONNECTING
           ) {
             Spacer(modifier = Modifier.height(12.dp))
@@ -1342,8 +1347,7 @@ fun ListenTogetherDialog(visible: Boolean, mediaMetadata: MediaMetadata?, onDism
             modifier = Modifier.fillMaxWidth()
           ) {
             if (
-              connectionState == ConnectionState.DISCONNECTED ||
-                connectionState == ConnectionState.ERROR
+              connectionState.isDisconnectedOrFailed
             ) {
               Button(
                 onClick = { listenTogetherManager.connect() },
@@ -1376,7 +1380,7 @@ fun ListenTogetherDialog(visible: Boolean, mediaMetadata: MediaMetadata?, onDism
 
     item { Spacer(modifier = Modifier.height(12.dp)) }
 
-    if (connectionState == ConnectionState.CONNECTED && !isInRoom) {
+    if (connectionState.isConnected && !isInRoom) {
       item {
         Text(
           text = stringResource(R.string.listen_together_background_disconnect_note),

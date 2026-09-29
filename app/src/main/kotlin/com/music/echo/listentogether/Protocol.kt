@@ -93,7 +93,8 @@ data class RoomState(
   @SerialName("last_update") val lastUpdate: Long,
   val volume: Float = 1f,
   val queue: List<TrackInfo> = emptyList(),
-  @SerialName("allow_participant_control") val allowParticipantControl: Boolean = false
+  @SerialName("allow_participant_control") val allowParticipantControl: Boolean = false,
+  val revision: Long = 0L
 )
 
 @Serializable
@@ -121,7 +122,8 @@ data class PlaybackActionPayload(
   val queue: List<TrackInfo>? = null,
   @SerialName("queue_title") val queueTitle: String? = null,
   val volume: Float? = null,
-  @SerialName("server_time") val serverTime: Long? = null
+  @SerialName("server_time") val serverTime: Long? = null,
+  val revision: Long? = null
 )
 
 @Serializable data class BufferReadyPayload(@SerialName("track_id") val trackId: String)
@@ -230,7 +232,8 @@ data class SyncStatePayload(
   val position: Long,
   @SerialName("last_update") val lastUpdate: Long,
   val queue: List<TrackInfo>? = null,
-  val volume: Float? = null
+  val volume: Float? = null,
+  val revision: Long = 0L
 )
 
 @Serializable data class ReconnectPayload(@SerialName("session_token") val sessionToken: String)

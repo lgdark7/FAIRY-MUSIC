@@ -34,6 +34,7 @@ message RoomState {
   float volume = 8;
   repeated TrackInfo queue = 9;
   bool allow_participant_control = 10;
+  int64 revision = 11;
 }
 
 message UpdateRoomSettingsPayload {
@@ -68,6 +69,7 @@ message PlaybackActionPayload {
   string queue_title = 7;
   float volume = 8;
   int64 server_time = 9;
+  int64 revision = 10;
 }
 
 message BufferReadyPayload {
@@ -175,6 +177,7 @@ message SyncStatePayload {
   int64 last_update = 4;
   repeated TrackInfo queue = 5;
   float volume = 6;
+  int64 revision = 7;
 }
 
 message ReconnectPayload {

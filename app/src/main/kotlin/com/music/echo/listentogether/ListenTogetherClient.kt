@@ -57,8 +57,21 @@ enum class ConnectionState {
   DISCONNECTED,
   CONNECTING,
   CONNECTED,
+  AUTHENTICATING,
+  IN_ROOM,
   RECONNECTING,
-  ERROR
+  FAILED,
+  @Deprecated("Use FAILED instead")
+  ERROR;
+
+  val isConnected: Boolean
+    get() = this == CONNECTED || this == AUTHENTICATING || this == IN_ROOM
+
+  val isConnectingOrReconnecting: Boolean
+    get() = this == CONNECTING || this == RECONNECTING || this == AUTHENTICATING
+
+  val isDisconnectedOrFailed: Boolean
+    get() = this == DISCONNECTED || this == FAILED || this == ERROR
 }
 
 enum class RoomRole {
@@ -356,6 +369,7 @@ class ListenTogetherClient @Inject constructor(private val context: Context) {
 
   @Volatile private var webSocket: WebSocket? = null
   private var pingJob: Job? = null
+  private var connectionWatchdogJob: Job? = null
   private var pingSentTime: Long = 0L
   private var reconnectAttempts = 0
 
@@ -429,18 +443,41 @@ class ListenTogetherClient @Inject constructor(private val context: Context) {
   fun connect() {
     if (
       _connectionState.value == ConnectionState.CONNECTED ||
+        _connectionState.value == ConnectionState.IN_ROOM ||
+        _connectionState.value == ConnectionState.AUTHENTICATING ||
         _connectionState.value == ConnectionState.CONNECTING
     ) {
-      log(LogLevel.WARNING, "Already connected or connecting")
+      log(LogLevel.WARNING, "[LT][WS] Already connected or connecting (state=${_connectionState.value})")
       return
+    }
+
+    if (webSocket != null) {
+      try {
+        webSocket?.cancel()
+      } catch (e: Exception) {}
+      webSocket = null
     }
 
     _connectionState.value = ConnectionState.CONNECTING
     val serverUrl = getServerUrl()
-    log(LogLevel.INFO, "Connecting to server", serverUrl)
+    log(LogLevel.INFO, "[LT][WS] CONNECTING url=$serverUrl")
 
     codec.format = MessageFormat.JSON
     codec.compressionEnabled = false
+
+    connectionWatchdogJob?.cancel()
+    connectionWatchdogJob = scope.launch {
+      delay(15000L)
+      if (_connectionState.value == ConnectionState.CONNECTING) {
+        log(LogLevel.ERROR, "[LT][WS] FAILED reason=\"Connection handshake timeout (15s)\"")
+        try {
+          webSocket?.cancel()
+        } catch (e: Exception) {}
+        webSocket = null
+        _connectionState.value = ConnectionState.FAILED
+        _events.emit(ListenTogetherEvent.ConnectionError("Connection timed out. Server unreachable."))
+      }
+    }
 
     val request =
       Request.Builder()
@@ -453,47 +490,50 @@ class ListenTogetherClient @Inject constructor(private val context: Context) {
         request,
         object : WebSocketListener() {
           override fun onOpen(webSocket: WebSocket, response: Response) {
-            log(LogLevel.INFO, "Connected to server")
+            connectionWatchdogJob?.cancel()
+            connectionWatchdogJob = null
+            log(LogLevel.INFO, "[LT][WS] CONNECTED")
             this@ListenTogetherClient.webSocket = webSocket
-            _connectionState.value = ConnectionState.CONNECTED
             reconnectAttempts = 0
             startPingJob()
 
             if (sessionToken != null && storedRoomCode != null) {
+              _connectionState.value = ConnectionState.AUTHENTICATING
               log(
                 LogLevel.INFO,
-                "Attempting to reconnect to previous session",
-                "Room: $storedRoomCode"
+                "[LT][WS] AUTHENTICATING room=$storedRoomCode"
               )
               sendMessage(MessageTypes.RECONNECT, ReconnectPayload(sessionToken!!))
             } else {
-
+              _connectionState.value = ConnectionState.CONNECTED
               executePendingAction()
             }
           }
 
           override fun onMessage(webSocket: WebSocket, text: String) {
-
             handleMessage(text.toByteArray())
           }
 
           override fun onMessage(webSocket: WebSocket, bytes: okio.ByteString) {
-
             handleMessage(bytes.toByteArray())
           }
 
           override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
-            log(LogLevel.INFO, "Server closing connection", "Code: $code, Reason: $reason")
+            log(LogLevel.INFO, "[LT][WS] Server closing connection code=$code reason=$reason")
             webSocket.close(1000, null)
           }
 
           override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
-            log(LogLevel.INFO, "Connection closed", "Code: $code, Reason: $reason")
+            connectionWatchdogJob?.cancel()
+            connectionWatchdogJob = null
+            log(LogLevel.INFO, "[LT][WS] CLOSED code=$code reason=$reason")
             handleDisconnect()
           }
 
           override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
-            log(LogLevel.ERROR, "Connection failure", t.message)
+            connectionWatchdogJob?.cancel()
+            connectionWatchdogJob = null
+            log(LogLevel.ERROR, "[LT][WS] FAILED reason=${t.message}")
             handleConnectionFailure(t)
           }
         }
@@ -524,7 +564,9 @@ class ListenTogetherClient @Inject constructor(private val context: Context) {
   }
 
   fun disconnect() {
-    log(LogLevel.INFO, "Disconnecting from server")
+    log(LogLevel.INFO, "[LT][WS] Disconnecting from server")
+    connectionWatchdogJob?.cancel()
+    connectionWatchdogJob = null
     releaseWakeLock()
     pingJob?.cancel()
     pingJob = null
@@ -731,14 +773,16 @@ class ListenTogetherClient @Inject constructor(private val context: Context) {
   }
 
   private fun handleConnectionFailure(t: Throwable) {
+    connectionWatchdogJob?.cancel()
+    connectionWatchdogJob = null
     pingJob?.cancel()
     pingJob = null
 
     val shouldReconnect = sessionToken != null || _roomState.value != null || pendingAction != null
 
     if (!isNetworkAvailable) {
-      log(LogLevel.WARNING, "Connection failure, waiting for network", t.message)
-      _connectionState.value = ConnectionState.DISCONNECTED
+      log(LogLevel.WARNING, "[LT][WS] Connection failure, waiting for network: ${t.message}")
+      _connectionState.value = ConnectionState.FAILED
       return
     }
 
@@ -751,8 +795,7 @@ class ListenTogetherClient @Inject constructor(private val context: Context) {
 
       log(
         LogLevel.INFO,
-        "Attempting reconnect",
-        "Attempt $reconnectAttempts/$MAX_RECONNECT_ATTEMPTS, waiting ${delaySeconds}s, reason: ${t.message}"
+        "[LT][WS] RECONNECT attempt=$reconnectAttempts/$MAX_RECONNECT_ATTEMPTS wait=${delaySeconds}s reason=${t.message}"
       )
 
       scope.launch {
@@ -761,20 +804,20 @@ class ListenTogetherClient @Inject constructor(private val context: Context) {
 
         if (
           _connectionState.value == ConnectionState.RECONNECTING ||
-            _connectionState.value == ConnectionState.DISCONNECTED
+            _connectionState.value == ConnectionState.DISCONNECTED ||
+            _connectionState.value == ConnectionState.FAILED
         ) {
-          log(LogLevel.INFO, "Reconnecting after backoff", "Delay was ${delaySeconds}s")
+          log(LogLevel.INFO, "[LT][WS] Reconnecting after backoff delay=${delaySeconds}s")
           connect()
         }
       }
     } else {
-      _connectionState.value = ConnectionState.ERROR
+      _connectionState.value = ConnectionState.FAILED
 
       if (sessionToken != null) {
         log(
           LogLevel.ERROR,
-          "Reconnection failed",
-          "Max attempts reached, but session preserved for manual reconnect"
+          "[LT][WS] FAILED max reconnect attempts reached, session preserved"
         )
         scope.launch {
           _events.emit(
@@ -784,7 +827,6 @@ class ListenTogetherClient @Inject constructor(private val context: Context) {
           )
         }
       } else {
-
         sessionToken = null
         storedRoomCode = null
         storedUsername = null
@@ -838,8 +880,9 @@ class ListenTogetherClient @Inject constructor(private val context: Context) {
 
           savePersistedSession()
 
+          _connectionState.value = ConnectionState.IN_ROOM
           acquireWakeLock()
-          log(LogLevel.INFO, "Room created", "Code: ${payload.roomCode}")
+          log(LogLevel.INFO, "[LT][ROOM] IN_ROOM room=${payload.roomCode} role=HOST")
           scope.launch {
             _events.emit(ListenTogetherEvent.RoomCreated(payload.roomCode, payload.userId))
           }
@@ -910,8 +953,9 @@ class ListenTogetherClient @Inject constructor(private val context: Context) {
 
           savePersistedSession()
 
+          _connectionState.value = ConnectionState.IN_ROOM
           acquireWakeLock()
-          log(LogLevel.INFO, "Joined room", "Code: ${payload.roomCode}")
+          log(LogLevel.INFO, "[LT][ROOM] IN_ROOM room=${payload.roomCode} role=GUEST")
           scope.launch {
             _events.emit(
               ListenTogetherEvent.JoinApproved(payload.roomCode, payload.userId, payload.state)
@@ -1149,31 +1193,24 @@ class ListenTogetherClient @Inject constructor(private val context: Context) {
           log(LogLevel.ERROR, "Server error", "${payload.code}: ${payload.message}")
 
           when (payload.code) {
-            "session_not_found" -> {
+            "session_not_found", "room_not_found" -> {
+              log(LogLevel.WARNING, "[LT][ROOM] Room or session expired on server (code=${payload.code})")
+              clearPersistedSession()
+              sessionToken = null
+              _connectionState.value = ConnectionState.FAILED
 
               if (storedRoomCode != null && storedUsername != null && !wasHost) {
                 log(
-                  LogLevel.WARNING,
-                  "Session expired on server",
-                  "Attempting automatic rejoin to room: $storedRoomCode"
+                  LogLevel.INFO,
+                  "[LT][ROOM] Attempting automatic rejoin to room: $storedRoomCode"
                 )
-
                 scope.launch {
                   delay(500)
                   joinRoom(storedRoomCode!!, storedUsername!!)
                 }
-              } else if (storedRoomCode != null && storedUsername != null) {
-
-                log(
-                  LogLevel.WARNING,
-                  "Host session expired",
-                  "Room: $storedRoomCode - manual intervention may be needed"
-                )
-                clearPersistedSession()
-                sessionToken = null
               } else {
-                clearPersistedSession()
-                sessionToken = null
+                _roomState.value = null
+                _role.value = RoomRole.NONE
               }
             }
             else -> {}
@@ -1207,12 +1244,16 @@ class ListenTogetherClient @Inject constructor(private val context: Context) {
 
           reconnectAttempts = 0
 
+          _connectionState.value = ConnectionState.IN_ROOM
           acquireWakeLock()
           log(
             LogLevel.INFO,
-            "Successfully reconnected to room",
-            "Code: ${payload.roomCode}, isHost: ${payload.isHost}, attempt was $reconnectAttempts"
+            "[LT][WS] ROOM_RESTORED room=${payload.roomCode} role=${_role.value}"
           )
+          scope.launch {
+            delay(150)
+            requestSync()
+          }
           scope.launch {
             _events.emit(
               ListenTogetherEvent.Reconnected(
@@ -1458,26 +1499,34 @@ class ListenTogetherClient @Inject constructor(private val context: Context) {
     insertNext: Boolean? = null,
     queue: List<TrackInfo>? = null,
     queueTitle: String? = null,
-    volume: Float? = null
+    volume: Float? = null,
+    serverTime: Long? = null,
+    revision: Long? = null
   ) {
+    if (!isInRoom && _connectionState.value != ConnectionState.IN_ROOM && _connectionState.value != ConnectionState.CONNECTED) {
+      log(LogLevel.WARNING, "[LT][WS] Dropping playback action $action: connection not ready (${_connectionState.value})")
+      return
+    }
     val canControl =
       _role.value == RoomRole.HOST ||
         (_role.value == RoomRole.GUEST && _roomState.value?.allowParticipantControl == true)
     if (!canControl) {
-      log(LogLevel.ERROR, "Cannot control playback", "Not allowed")
+      log(LogLevel.ERROR, "[LT][WS] Cannot control playback: not allowed")
       return
     }
     sendMessage(
       MessageTypes.PLAYBACK_ACTION,
       PlaybackActionPayload(
-        action,
-        trackId,
-        position,
-        trackInfo,
-        insertNext,
-        queue,
-        queueTitle,
-        volume
+        action = action,
+        trackId = trackId,
+        position = position,
+        trackInfo = trackInfo,
+        insertNext = insertNext,
+        queue = queue,
+        queueTitle = queueTitle,
+        volume = volume,
+        serverTime = serverTime ?: System.currentTimeMillis(),
+        revision = revision
       )
     )
   }

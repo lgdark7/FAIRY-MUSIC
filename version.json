@@ -1,15 +1,17 @@
 {
-  "version": "1.0.7",
-  "versionCode": 8,
-  "releaseDate": "September 26, 2026",
-  "size": "121 MB",
-  "apkUrl": "https://github.com/lgdark7/FAIRY-MUSIC/releases/download/v1.0.7/FAIRY-MUSIC-v1.0.7.apk",
+  "version": "1.0.8",
+  "versionCode": 9,
+  "releaseDate": "September 29, 2026",
+  "size": "118 MB",
+  "apkUrl": "https://github.com/lgdark7/FAIRY-MUSIC/releases/download/v1.0.8/FAIRY-MUSIC-v1.0.8.apk",
   "imageUrl": "https://raw.githubusercontent.com/lgdark7/FAIRY-MUSIC/main/assets/Fairy-Music.png",
-  "description": "Fix Play Together host song skipping: when host skips a song, guest immediately skips to the exact new song instead of replaying the previous song.",
+  "description": "Play Together Production Hardening: Monotonic Revision Sync, Anti-Drift Math, Authentic Buffer State & Auto-Resync.",
   "changelog": [
-    "Fixed Play Together host song skip desync: guests now immediately transition to the new song when host skips",
-    "Prevented fake in-track SEEK(0ms) calls during track transitions which previously caused the old song to restart from the beginning",
-    "Enabled persistent keystore with v1 JAR + v2 APK signature schemes to eliminate 'Can't install app / There's a problem with the app file' on different devices",
-    "Added immediate requestSync fallback if guest receives remote skip without a matching queue window"
+    "Monotonic revision system (revisions 1..N) to prevent out-of-order queue or seek packets from overwriting newer track changes",
+    "Authoritative elapsed-time advancement math: guest calculates exact host playback position accounting for network latency",
+    "Eliminated fake BUFFER_READY: player reports ready only after ExoPlayer finishes stream extraction and buffering",
+    "Added ExoPlayer onPlayerError hook on guest to trigger automatic room resync on extraction failure",
+    "Explicit connection state machine (AUTHENTICATING, IN_ROOM, FAILED) with 15s connection handshake watchdog",
+    "Standardized structured [LT] logging across WebSocket, Player, Queue, and Drift layers"
   ]
 }
