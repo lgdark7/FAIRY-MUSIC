@@ -21,6 +21,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -57,6 +58,7 @@ fun AboutScreen(
   highlightKey: String? = null
 ) {
   val uriHandler = LocalUriHandler.current
+  var showFeedbackDialog by rememberSaveable { mutableStateOf(false) }
 
   val context = LocalContext.current
 
@@ -132,6 +134,12 @@ fun AboutScreen(
                 onClick = { uriHandler.openUri("https://github.com/lgdark7/FAIRY-MUSIC") }
               ),
               Material3SettingsItem(
+                icon = painterResource(R.drawable.support_echo),
+                title = { Text("Feedback & Support") },
+                description = { Text("Email Developer (bennyrahul1005@gmail.com)") },
+                onClick = { showFeedbackDialog = true }
+              ),
+              Material3SettingsItem(
                 icon = painterResource(R.drawable.ic_discord_new),
                 title = { Text("Discord") },
                 description = { Text("Join Community") },
@@ -142,6 +150,12 @@ fun AboutScreen(
       }
 
     }
+  }
+
+  if (showFeedbackDialog) {
+    echo.music.iad1tya.ui.component.FeedbackDialog(
+      onDismiss = { showFeedbackDialog = false }
+    )
   }
 }
 

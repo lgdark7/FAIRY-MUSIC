@@ -33,8 +33,8 @@ android {
     applicationId = "com.fairymusic.app"
     minSdk = 26
     targetSdk = 36
-    versionCode = 9
-    versionName = "1.0.8"
+    versionCode = 10
+    versionName = "1.0.9"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     vectorDrawables.useSupportLibrary = true
@@ -163,8 +163,11 @@ android {
     }
     debug {
       applicationIdSuffix = ".debug"
-      isDebuggable = true
-      signingConfig = signingConfigs.getByName("debug")
+      isDebuggable = false
+      isMinifyEnabled = true
+      isShrinkResources = true
+      signingConfig = signingConfigs.getByName("persistentDebug")
+      proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
       buildConfigField("String", "ARCHITECTURE", "\"debug\"")
     }
   }

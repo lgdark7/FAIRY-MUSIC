@@ -59,8 +59,6 @@ abstract class ActivityLifecycleManager : BaseLifecycleContentProvider() {
 
         override fun onActivityResumed(activity: Activity) {
           activeActivities.add(activity)
-          handler.removeCallbacksAndMessages(null)
-          handler.post(activityTimerRunnable)
           this@ActivityLifecycleManager.onActivityResumed(activity)
         }
 

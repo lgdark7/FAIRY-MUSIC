@@ -33,7 +33,9 @@ jobs:
     - name: Rename APK
       run: |
         mkdir -p release-out
+        cp app/build/outputs/apk/universalFoss/debug/*.apk release-out/FAIRY-MUSIC-${{ github.ref_name }}.apk
         cp app/build/outputs/apk/universalFoss/debug/*.apk release-out/Fairy-Music-${{ github.ref_name }}.apk
+        cp app/build/outputs/apk/universalFoss/debug/*.apk release-out/FAIRYMUSIC.apk
 
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2

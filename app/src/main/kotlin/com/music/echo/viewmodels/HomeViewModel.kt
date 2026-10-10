@@ -272,7 +272,7 @@ constructor(
     val likedSongs = database.likedSongsByCreateDateAsc().first()
     if (likedSongs.isEmpty()) return
 
-    val seeds = likedSongs.shuffled().distinctBy { it.id }.take(5)
+    val seeds = likedSongs.shuffled().distinctBy { it.id }.take(3)
 
     val items = java.util.Collections.synchronizedList(mutableListOf<DailyDiscoverItem>())
 
@@ -322,27 +322,8 @@ constructor(
         val forgotten =
           database.forgottenFavorites().first().filterVideoSongs(hideVideoSongs).take(8)
 
-        val recentSong = database.events().first().firstOrNull()?.song
-        val ytSimilarSongs = mutableListOf<Song>()
-
-        if (recentSong != null) {
-          val endpoint =
-            YouTube.next(WatchEndpoint(videoId = recentSong.id)).getOrNull()?.relatedEndpoint
-          if (endpoint != null) {
-            YouTube.related(endpoint).onSuccess { page ->
-              page.songs.take(10).forEach { ytSong ->
-                database.song(ytSong.id).first()?.let { localSong ->
-                  if (!hideVideoSongs || !localSong.song.isVideo) {
-                    ytSimilarSongs.add(localSong)
-                  }
-                }
-              }
-            }
-          }
-        }
-
         val combined =
-          (relatedSongs + forgotten + ytSimilarSongs).distinctBy { it.id }.shuffled().take(20)
+          (relatedSongs + forgotten).distinctBy { it.id }.shuffled().take(20)
 
         quickPicks.value = combined
           .ifEmpty { relatedSongs.shuffled().take(20) }
@@ -424,7 +405,7 @@ constructor(
       }
     }
 
-    val uniqueCandidates = candidatePlaylists.distinctBy { it.id }.shuffled().take(5)
+    val uniqueCandidates = candidatePlaylists.distinctBy { it.id }.shuffled().take(3)
 
     val playlists = java.util.Collections.synchronizedList(mutableListOf<CommunityPlaylistItem>())
 
@@ -501,7 +482,7 @@ constructor(
           .first()
           .filter { it.artist.isYouTubeArtist }
           .shuffled()
-          .take(4)
+          .take(2)
           .map { artist ->
             async(Dispatchers.IO) {
               val items = mutableListOf<YTItem>()
@@ -530,7 +511,7 @@ constructor(
           .first()
           .filter { it.album != null }
           .shuffled()
-          .take(3)
+          .take(2)
           .map { song ->
             async(Dispatchers.IO) {
               val endpoint =
@@ -597,10 +578,8 @@ constructor(
     val hideVideoSongs = context.dataStore.get(HideVideoSongsKey, false)
     val hideYoutubeShorts = context.dataStore.get(HideYoutubeShortsKey, false)
 
+    // Stage 1: Load primary Home and Explore feeds first
     coroutineScope {
-      launch(Dispatchers.IO) { getDailyDiscover() }
-      launch(Dispatchers.IO) { getCommunityPlaylists() }
-      launch(Dispatchers.IO) { loadSimilarRecommendations() }
       launch(Dispatchers.IO) {
         YouTube.home()
           .onSuccess { page ->
@@ -632,6 +611,15 @@ constructor(
       }
     }
 
+    // Stage 2: Stagger speculative recommendation feeds with a brief delay to prevent network contention
+    // and Compose UI frame drops during initial composition.
+    kotlinx.coroutines.delay(400)
+    coroutineScope {
+      launch(Dispatchers.IO) { getDailyDiscover() }
+      launch(Dispatchers.IO) { getCommunityPlaylists() }
+      launch(Dispatchers.IO) { loadSimilarRecommendations() }
+    }
+
     allYtItems.value =
       similarRecommendations.value?.flatMap { it.items }.orEmpty() +
         homePage.value?.sections?.flatMap { it.items }.orEmpty()
@@ -640,11 +628,15 @@ constructor(
   private suspend fun load() {
     isLoading.value = true
 
+    // Fast local phase: DB queries only (<15ms)
     loadLocalDataPhase()
 
-    loadNetworkDataPhase()
-
+    // Dismiss loading immediately so local items (Speed Dial, Quick Picks, Forgotten Favorites)
+    // are interactive without spinning or shimmering
     isLoading.value = false
+
+    // Staged background network queries
+    loadNetworkDataPhase()
   }
 
   private val _isLoadingMore = MutableStateFlow(false)

@@ -97,6 +97,12 @@ class App : Application(), SingletonImageLoader.Factory {
     echo.music.iad1tya.utils.cipher.CipherDeobfuscator.initialize(this)
     echo.music.iad1tya.utils.YTPlayerUtils.initialize()
 
+    try {
+      echo.music.iad1tya.announcement.AnnouncementWorker.schedulePeriodicCheck(this)
+    } catch (e: Throwable) {
+      Timber.e(e, "Failed to schedule AnnouncementWorker")
+    }
+
     if (BuildConfig.DEBUG) {
       Timber.plant(Timber.DebugTree())
     }
@@ -352,7 +358,7 @@ class App : Application(), SingletonImageLoader.Factory {
         crossfade(true)
         allowHardware(Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
 
-        memoryCache { MemoryCache.Builder().maxSizePercent(context, 0.25).build() }
+        memoryCache { MemoryCache.Builder().maxSizePercent(context, 0.15).build() }
         if (cacheSize == 0) {
           diskCachePolicy(CachePolicy.DISABLED)
         } else {

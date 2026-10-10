@@ -29,7 +29,9 @@ internal class DensityConfiguration(private val densityScale: Float) : ActivityL
   }
 
   private fun updateDensityDpi(config: Configuration, resources: Resources) {
+    if (densityScale == 1.0f || originalDensityDpi == 0) return
     val newDensityDpi = (originalDensityDpi * densityScale).roundToInt()
+    if (config.densityDpi == newDensityDpi) return
     config.densityDpi = newDensityDpi
     Timber.tag(TAG).i("Updated densityDpi to: $newDensityDpi")
     @Suppress("DEPRECATION") resources.updateConfiguration(config, resources.displayMetrics)
@@ -48,8 +50,16 @@ internal class DensityConfiguration(private val densityScale: Float) : ActivityL
   }
 
   private fun applyDensityToActivity(activity: Activity) {
+    if (densityScale == 1.0f) return
     try {
-      updateDensityDpi(activity.resources.configuration, activity.resources)
+      val configuration = activity.resources.configuration
+      if (originalDensityDpi == 0) {
+        originalDensityDpi = configuration.densityDpi
+      }
+      val newDensityDpi = (originalDensityDpi * densityScale).roundToInt()
+      if (configuration.densityDpi != newDensityDpi) {
+        updateDensityDpi(configuration, activity.resources)
+      }
     } catch (e: Exception) {
       Timber.tag(TAG).w(e, "Failed to update density for activity")
     }

@@ -236,7 +236,10 @@ fun CommunityPlaylistCard(
       MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
     }
 
-  val dbPlaylist by database.playlistByBrowseId(item.playlist.id).collectAsState(initial = null)
+  val dbPlaylist by
+    remember(item.playlist.id) {
+      database.playlistByBrowseId(item.playlist.id)
+    }.collectAsState(initial = null)
   val isBookmarked = dbPlaylist?.playlist?.bookmarkedAt != null
 
   Card(
@@ -254,13 +257,13 @@ fun CommunityPlaylistCard(
           Column(modifier = Modifier.fillMaxSize()) {
             Row(modifier = Modifier.weight(1f)) {
               AsyncImage(
-                model = item.songs.getOrNull(0)?.thumbnail?.resize(544, 544),
+                model = item.songs.getOrNull(0)?.thumbnail?.resize(120, 120),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.weight(1f).fillMaxSize()
               )
               AsyncImage(
-                model = item.songs.getOrNull(1)?.thumbnail?.resize(544, 544),
+                model = item.songs.getOrNull(1)?.thumbnail?.resize(120, 120),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.weight(1f).fillMaxSize()
@@ -268,13 +271,13 @@ fun CommunityPlaylistCard(
             }
             Row(modifier = Modifier.weight(1f)) {
               AsyncImage(
-                model = item.songs.getOrNull(2)?.thumbnail?.resize(544, 544),
+                model = item.songs.getOrNull(2)?.thumbnail?.resize(120, 120),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.weight(1f).fillMaxSize()
               )
               AsyncImage(
-                model = item.songs.getOrNull(3)?.thumbnail?.resize(544, 544),
+                model = item.songs.getOrNull(3)?.thumbnail?.resize(120, 120),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.weight(1f).fillMaxSize()
@@ -312,7 +315,7 @@ fun CommunityPlaylistCard(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
           ) {
             AsyncImage(
-              model = song.thumbnail.resize(544, 544),
+              model = song.thumbnail.resize(120, 120),
               contentDescription = null,
               modifier = Modifier.size(56.dp).clip(RoundedCornerShape(12.dp)),
               contentScale = ContentScale.Crop
@@ -450,7 +453,9 @@ fun DailyDiscoverCard(
 ) {
   val database = LocalDatabase.current
   val playCount by
-    database.getLifetimePlayCount(dailyDiscover.recommendation.id).collectAsState(initial = 0)
+    remember(dailyDiscover.recommendation.id) {
+      database.getLifetimePlayCount(dailyDiscover.recommendation.id)
+    }.collectAsState(initial = 0)
   val menuState = LocalMenuState.current
   val haptic = LocalHapticFeedback.current
 
@@ -487,7 +492,7 @@ fun DailyDiscoverCard(
       AsyncImage(
         model =
           ImageRequest.Builder(LocalContext.current)
-            .data(dailyDiscover.recommendation.thumbnail?.resize(1200, 1200))
+            .data(dailyDiscover.recommendation.thumbnail?.resize(800, 800))
             .crossfade(true)
             .build(),
         contentDescription = null,

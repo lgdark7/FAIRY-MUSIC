@@ -392,6 +392,12 @@ class MainActivity : ComponentActivity() {
 
     listenTogetherManager.initialize()
 
+    try {
+      echo.music.iad1tya.announcement.AnnouncementWorker.triggerImmediateCheck(this)
+    } catch (e: Throwable) {
+      timber.log.Timber.e(e, "Failed to trigger AnnouncementWorker immediate check")
+    }
+
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
       val locale =
         dataStore[AppLanguageKey]
@@ -1536,7 +1542,7 @@ class MainActivity : ComponentActivity() {
                     fadeOut(animationSpec = spring(dampingRatio = 0.9f, stiffness = Spring.StiffnessMediumLow)) +
                     scaleOut(targetScale = 0.98f, animationSpec = spring(dampingRatio = 0.85f, stiffness = Spring.StiffnessMediumLow))
                   },
-                  modifier = Modifier.layerBackdrop(appBackdrop).nestedScroll(topAppBarScrollBehavior.nestedScrollConnection)
+                  modifier = (if (glassEffectConfig.globalEnabled) Modifier.layerBackdrop(appBackdrop) else Modifier).nestedScroll(topAppBarScrollBehavior.nestedScrollConnection)
                 ) {
                   navigationBuilder(
                     navController = navController,

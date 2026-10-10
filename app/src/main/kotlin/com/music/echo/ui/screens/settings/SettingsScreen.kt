@@ -59,6 +59,7 @@ fun SettingsScreen(
       echo.music.iad1tya.echomusic.updater.getAutoUpdateCheckSetting(context)
 
   var searchQuery by rememberSaveable { mutableStateOf("") }
+  var showFeedbackDialog by rememberSaveable { mutableStateOf(false) }
   val searchLower = searchQuery.lowercase()
 
   val accountText = stringResource(R.string.account)
@@ -340,6 +341,21 @@ fun SettingsScreen(
           )
         )
       }
+      if (
+        "feedback & support".contains(searchLower) ||
+          "feedback".contains(searchLower) ||
+          "support".contains(searchLower)
+      ) {
+        add(
+          Material3SettingsItem(
+            isHighlighted = (highlightKey == "Feedback & Support"),
+            icon = painterResource(R.drawable.support_echo),
+            title = { Text("Feedback & Support") },
+            description = { Text("Send bug reports, feedback, and logs directly to developer") },
+            onClick = { showFeedbackDialog = true }
+          )
+        )
+      }
     }
 
     val finalItemsList =
@@ -440,4 +456,10 @@ fun SettingsScreen(
       }
     }
   )
+
+  if (showFeedbackDialog) {
+    echo.music.iad1tya.ui.component.FeedbackDialog(
+      onDismiss = { showFeedbackDialog = false }
+    )
+  }
 }

@@ -16,7 +16,12 @@ import timber.log.Timber
 class PoTokenGenerator {
   private val TAG = "PoTokenGenerator"
 
-  private val webViewSupported by lazy { runCatching { CookieManager.getInstance() }.isSuccess }
+  private val webViewSupported by lazy {
+    runCatching {
+      CookieManager.getInstance()
+      CipherDeobfuscator.appContext.assets.open("po_token.html").close()
+    }.isSuccess
+  }
   private var webViewBadImpl = false // whether the system has a bad WebView implementation
 
   private val webPoTokenGenLock = Mutex()
@@ -25,22 +30,7 @@ class PoTokenGenerator {
   private var webPoTokenGenerator: PoTokenWebView? = null
 
   fun initialize() {
-    if (!webViewSupported || webViewBadImpl) return
-    kotlinx.coroutines.GlobalScope.launch(Dispatchers.Main) {
-      try {
-        webPoTokenGenLock.withLock {
-          if (webPoTokenGenerator == null) {
-            Timber.tag(TAG).d("Pre-initializing PoTokenWebView in background...")
-            webPoTokenSessionId = "init-" + System.currentTimeMillis()
-            webPoTokenGenerator =
-              PoTokenWebView.getNewPoTokenGenerator(CipherDeobfuscator.appContext)
-            webPoTokenStreamingPot = webPoTokenGenerator!!.generatePoToken(webPoTokenSessionId!!)
-          }
-        }
-      } catch (e: Exception) {
-        Timber.tag(TAG).e(e, "Failed to pre-initialize PoTokenWebView")
-      }
-    }
+    // Lazily initialized on-demand in getWebClientPoToken to prevent freezing cold start with Chromium engine initialization.
   }
 
   fun getWebClientPoToken(videoId: String, sessionId: String): PoTokenResult? {
