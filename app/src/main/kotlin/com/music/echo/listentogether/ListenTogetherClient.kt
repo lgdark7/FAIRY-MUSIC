@@ -1061,8 +1061,8 @@ class ListenTogetherClient @Inject constructor(private val context: Context) {
               _roomState.value =
                 _roomState.value?.copy(
                   currentTrack = payload.trackInfo,
-                  isPlaying = false,
-                  position = 0
+                  isPlaying = true,
+                  position = payload.position ?: 0L
                 )
             }
             PlaybackActions.QUEUE_ADD -> {

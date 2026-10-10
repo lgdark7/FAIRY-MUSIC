@@ -153,10 +153,14 @@ constructor(
           if (currentTrackId != null && currentTrackId != lastSyncedTrackId) {
             Timber.tag(TAG)
               .d("[SYNC] Sending track change before play state: track = $currentTrackId")
-            player.currentMetadata?.let { metadata ->
+            val metadata = getCurrentMetadata()
+            if (metadata != null) {
               sendTrackChangeInternal(metadata)
               lastSyncedTrackId = currentTrackId
               lastSyncedIsPlaying = playWhenReady
+            }
+            if (playWhenReady) {
+              sendPlayState(true, player)
             }
             return
           }
@@ -164,6 +168,24 @@ constructor(
           sendPlayState(playWhenReady, player)
         } catch (e: Exception) {
           Timber.tag(TAG).e(e, "Error in onPlayWhenReadyChanged")
+        }
+      }
+
+      override fun onPlaybackStateChanged(playbackState: Int) {
+        try {
+          if (!canControlMusic || isApplyingRemoteAction || !isInRoom) return
+          val connection = playerConnection ?: return
+          val player = connection.player
+
+          if (playbackState == Player.STATE_READY && player.playWhenReady) {
+            val trackId = player.currentMediaItem?.mediaId
+            if (trackId != null && trackId == lastSyncedTrackId && lastSyncedIsPlaying != true) {
+              Timber.tag(TAG).d("Host playback reached STATE_READY, ensuring PLAY broadcast")
+              sendPlayState(true, player)
+            }
+          }
+        } catch (e: Exception) {
+          Timber.tag(TAG).e(e, "Error in onPlaybackStateChanged")
         }
       }
 
@@ -204,7 +226,7 @@ constructor(
           lastSyncedTrackId = trackId
           lastSyncedIsPlaying = player.playWhenReady
 
-          val metadata = mediaItem.metadata ?: player.currentMetadata ?: connection.mediaMetadata.value
+          val metadata = getCurrentMetadata()
           if (metadata != null) {
             Timber.tag(TAG).d("Host sending track change: ${metadata.title}")
             sendTrackChangeInternal(metadata)
@@ -444,18 +466,23 @@ constructor(
           lastSyncedIsPlaying = player?.playWhenReady
           lastSyncedTrackId = player?.currentMediaItem?.mediaId
 
-          player?.currentMetadata?.let { metadata ->
+          val metadata = getCurrentMetadata()
+          if (metadata != null) {
             Timber.tag(TAG).d("Room created with existing track: ${metadata.title}")
 
             sendTrackChangeInternal(metadata)
 
-            val isPlaying = player.playWhenReady
+            val isPlaying = player?.playWhenReady == true
             if (isPlaying) {
               lastSyncedIsPlaying = true
-              val position = player.currentPosition
+              val position = player?.currentPosition ?: 0L
               Timber.tag(TAG).d("Host already playing on room create, sending PLAY at $position")
               sendPlaybackActionWithSync {
-                client.sendPlaybackAction(PlaybackActions.PLAY, position = position)
+                client.sendPlaybackAction(
+                  PlaybackActions.PLAY,
+                  trackId = metadata.id,
+                  position = position
+                )
               }
             }
           }
@@ -480,6 +507,14 @@ constructor(
         )
         applyHostVolumeIfNeeded(event.state.volume)
         updateGuestMuteState()
+
+        scope.launch {
+          delay(600)
+          if (!isHost && isInRoom) {
+            Timber.tag(TAG).d("Requesting fresh sync on JoinApproved")
+            requestSync()
+          }
+        }
       }
       is ListenTogetherEvent.PlaybackSync -> {
         Timber.tag(TAG).d("PlaybackSync received: ${event.action.action}")
@@ -492,15 +527,20 @@ constructor(
           try {
             val connection = playerConnection
             val player = connection?.player
-            player?.currentMetadata?.let { metadata ->
+            val metadata = getCurrentMetadata()
+            if (metadata != null) {
               Timber.tag(TAG)
                 .d("[SYNC] Sending current track to newly joined user: ${metadata.title}")
               sendTrackChangeInternal(metadata)
 
-              if (player.playWhenReady) {
+              if (player?.playWhenReady == true) {
                 val pos = player.currentPosition
                 Timber.tag(TAG).d("[SYNC] Host playing, sending PLAY at $pos for new joiner")
-                client.sendPlaybackAction(PlaybackActions.PLAY, position = pos)
+                client.sendPlaybackAction(
+                  PlaybackActions.PLAY,
+                  trackId = metadata.id,
+                  position = pos
+                )
               }
             }
           } catch (e: Exception) {
@@ -688,6 +728,7 @@ constructor(
     lastSyncedTrackId = null
     bufferingTrackId = null
     isSyncing = false
+    pendingSyncState = null
     bufferCompleteReceivedForTrack = null
     lastRole = RoomRole.NONE
     lastSyncActionTime = 0L
@@ -793,6 +834,12 @@ constructor(
       Timber.tag(TAG).w("Cannot sync playback - no player connection")
       return
     }
+
+    if (isHost && (!allowParticipantControl || isSyncing)) {
+      Timber.tag(TAG).d("Host ignoring playback sync action: ${action.action}")
+      return
+    }
+
     val player = connection.player
 
     Timber.tag(TAG).d("Handling playback sync: ${action.action}, position: ${action.position}")
@@ -804,9 +851,32 @@ constructor(
         PlaybackActions.PLAY -> {
           val targetPos = action.position ?: 0L
           val now = System.currentTimeMillis()
+          val incomingTrackId = action.trackId
 
           Timber.tag(TAG)
-            .d("Remote PLAY: targetPos=$targetPos, currently playWhenReady=${player.playWhenReady}, pos=${player.currentPosition}")
+            .d("Remote PLAY: trackId=$incomingTrackId, targetPos=$targetPos, currently playWhenReady=${player.playWhenReady}, pos=${player.currentPosition}, localTrack=${player.currentMediaItem?.mediaId}")
+
+          if (incomingTrackId != null && incomingTrackId != player.currentMediaItem?.mediaId) {
+            Timber.tag(TAG).w("Track mismatch on PLAY: host is on $incomingTrackId, guest is on ${player.currentMediaItem?.mediaId}")
+            val existingIndex = (0 until player.mediaItemCount).firstOrNull {
+              player.getMediaItemAt(it).mediaId == incomingTrackId
+            } ?: -1
+
+            if (existingIndex != -1) {
+              Timber.tag(TAG).d("Found host track $incomingTrackId in guest queue at $existingIndex, switching")
+              connection.allowInternalSync = true
+              player.seekTo(existingIndex, targetPos)
+              if (player.playbackState == Player.STATE_IDLE) {
+                player.prepare()
+              }
+              player.playWhenReady = true
+              connection.allowInternalSync = false
+            } else {
+              Timber.tag(TAG).w("Host track $incomingTrackId not in guest queue, requesting fresh sync")
+              requestSync()
+            }
+            return
+          }
 
           if (bufferingTrackId != null) {
             pendingSyncState =
@@ -838,12 +908,17 @@ constructor(
             val posDiff = player.currentPosition - targetPos
             val absDiff = kotlin.math.abs(posDiff)
 
+            val duration = player.duration
+            val isNearEnd = duration > 0 && player.currentPosition > (duration * 0.8)
+
             if (absDiff > HARD_SEEK_DRIFT_THRESHOLD_MS) {
-              Timber.tag(TAG).d("Large drift ($absDiff ms > 8s), seeking to $targetPos")
-              connection.allowInternalSync = true
-              player.seekTo(targetPos)
-              connection.allowInternalSync = false
-              player.setPlaybackSpeed(1.0f)
+              if (!isNearEnd || absDiff > 15000L) {
+                Timber.tag(TAG).d("Large drift ($absDiff ms > 8s), seeking to $targetPos")
+                connection.allowInternalSync = true
+                player.seekTo(targetPos)
+                connection.allowInternalSync = false
+                player.setPlaybackSpeed(1.0f)
+              }
             } else if (absDiff > SPEED_DRIFT_THRESHOLD_MS) {
               if (posDiff < 0) {
                 Timber.tag(TAG).d("Guest behind by ${-posDiff}ms -> speed 1.04x")
@@ -1055,29 +1130,40 @@ constructor(
               }
 
               val currentId = player.currentMediaItem?.mediaId
-              val newIndex = if (currentId != null) newIds.indexOf(currentId) else -1
-
-              if (newIndex != -1) {
-                val mediaItems = queue.map { it.toMediaMetadata().toMediaItem() }
-                val currentPos = player.currentPosition
-                val wasPlaying = player.playWhenReady
-
-                connection.allowInternalSync = true
-                player.setMediaItems(mediaItems, newIndex, currentPos)
-                player.prepare()
-                player.playWhenReady = wasPlaying
-                try {
-                  connection.service.currentQueue = ListQueue(
-                    title = queueTitle ?: "Listen Together",
-                    items = mediaItems,
-                    startIndex = newIndex,
-                    position = currentPos
-                  )
-                  connection.service.queueTitle = queueTitle ?: "Listen Together"
-                } catch (e: Exception) {
-                  Timber.tag(TAG).e(e, "Failed to set queue title during SYNC_QUEUE")
+              if (currentId != null && currentId in newIds) {
+                val existingSet = currentIds.toSet()
+                val missingTracks = queue.filter { it.id !in existingSet }
+                if (missingTracks.isNotEmpty()) {
+                  val newMediaItems = missingTracks.map { it.toMediaMetadata().toMediaItem() }
+                  connection.allowInternalSync = true
+                  player.addMediaItems(newMediaItems)
+                  connection.allowInternalSync = false
+                  Timber.tag(TAG).d("Appended ${newMediaItems.size} items to guest queue seamlessly")
                 }
-                connection.allowInternalSync = false
+              } else {
+                val newIndex = if (currentId != null) newIds.indexOf(currentId) else -1
+                if (newIndex != -1) {
+                  val mediaItems = queue.map { it.toMediaMetadata().toMediaItem() }
+                  val currentPos = player.currentPosition
+                  val wasPlaying = player.playWhenReady
+
+                  connection.allowInternalSync = true
+                  player.setMediaItems(mediaItems, newIndex, currentPos)
+                  player.prepare()
+                  player.playWhenReady = wasPlaying
+                  try {
+                    connection.service.currentQueue = ListQueue(
+                      title = queueTitle ?: "Listen Together",
+                      items = mediaItems,
+                      startIndex = newIndex,
+                      position = currentPos
+                    )
+                    connection.service.queueTitle = queueTitle ?: "Listen Together"
+                  } catch (e: Exception) {
+                    Timber.tag(TAG).e(e, "Failed to set queue title during SYNC_QUEUE")
+                  }
+                  connection.allowInternalSync = false
+                }
               }
             }
           }
@@ -1275,6 +1361,25 @@ constructor(
     refreshSyncCapabilities()
   }
 
+  private fun getCurrentMetadata(): MediaMetadata? {
+    val connection = playerConnection ?: return null
+    val player = connection.player
+    player.currentMetadata?.let { return it }
+    connection.mediaMetadata.value?.let { return it }
+    val item = player.currentMediaItem ?: return null
+    val mm = item.mediaMetadata
+    val title = mm.title?.toString()?.takeIf { it.isNotBlank() } ?: "Unknown"
+    val artist = mm.artist?.toString()?.takeIf { it.isNotBlank() } ?: "Unknown"
+    val duration = if (player.duration > 0) (player.duration / 1000).toInt() else 0
+    return MediaMetadata(
+      id = item.mediaId,
+      title = title,
+      artists = listOf(Artist(id = "", name = artist)),
+      duration = duration,
+      thumbnailUrl = mm.artworkUri?.toString()
+    )
+  }
+
   fun sendTrackChange(metadata: MediaMetadata) {
     if (!canControlMusic || isSyncing || isApplyingRemoteAction) return
     sendTrackChangeInternal(metadata)
@@ -1323,6 +1428,21 @@ constructor(
         trackInfo = trackInfo,
         queue = currentQueue
       )
+    }
+
+    if (playerConnection?.player?.playWhenReady == true) {
+      scope.launch {
+        delay(100)
+        if (isInRoom && canControlMusic && playerConnection?.player?.playWhenReady == true) {
+          Timber.tag(TAG).d("Broadcasting PLAY immediately after CHANGE_TRACK for ${trackInfo.title}")
+          client.sendPlaybackAction(
+            PlaybackActions.PLAY,
+            trackId = trackInfo.id,
+            position = playerConnection?.player?.currentPosition ?: currentPos
+          )
+          lastSyncedIsPlaying = true
+        }
+      }
     }
   }
 
@@ -1386,17 +1506,23 @@ constructor(
   }
 
   private fun androidx.media3.common.Timeline.Window.toTrackInfo(): TrackInfo {
-    val metadata =
-      mediaItem.metadata ?: return TrackInfo("unknown", "Unknown", "Unknown", "", 0, "")
-    val durationMs = if (metadata.duration > 0) metadata.duration.toLong() * 1000 else 180000L
+    val meta = mediaItem.metadata
+    val mm = mediaItem.mediaMetadata
+    val trackId = meta?.id?.takeIf { it.isNotBlank() } ?: mediaItem.mediaId.takeIf { it.isNotBlank() } ?: "unknown"
+    val title = meta?.title?.takeIf { it.isNotBlank() } ?: mm.title?.toString()?.takeIf { it.isNotBlank() } ?: "Unknown"
+    val artist = meta?.artists?.joinToString(", ") { it.name }?.takeIf { it.isNotBlank() }
+      ?: mm.artist?.toString()?.takeIf { it.isNotBlank() } ?: "Unknown"
+    val album = meta?.album?.title ?: mm.albumTitle?.toString()
+    val durationMs = if ((meta?.duration ?: 0) > 0) meta!!.duration.toLong() * 1000 else if (durationUs > 0) durationUs / 1000 else 180000L
+    val thumbnail = meta?.thumbnailUrl ?: mm.artworkUri?.toString()
     return TrackInfo(
-      id = metadata.id,
-      title = metadata.title,
-      artist = metadata.artists.joinToString(", ") { it.name },
-      album = metadata.album?.title,
+      id = trackId,
+      title = title,
+      artist = artist,
+      album = album,
       duration = durationMs,
-      thumbnail = metadata.thumbnailUrl,
-      suggestedBy = metadata.suggestedBy
+      thumbnail = thumbnail,
+      suggestedBy = meta?.suggestedBy
     )
   }
 

@@ -1,16 +1,20 @@
 {
-  "version": "1.0.9",
-  "versionCode": 10,
+  "version": "1.0.10",
+  "versionCode": 11,
   "releaseDate": "October 10, 2026",
-  "size": "70 MB",
-  "apkUrl": "https://github.com/lgdark7/FAIRY-MUSIC/releases/download/v1.0.9/FAIRY-MUSIC-v1.0.9.apk",
+  "size": "71 MB",
+  "apkUrl": "https://github.com/lgdark7/FAIRY-MUSIC/releases/download/v1.0.10/FAIRY-MUSIC-v1.0.10.apk",
   "imageUrl": "https://raw.githubusercontent.com/lgdark7/FAIRY-MUSIC/main/assets/Fairy-Music.png",
-  "description": "Fairy Music v1.0.9: Massive Performance Boost, Background Announcements & Ultra-Light 70MB Build.",
+  "description": "Fairy Music v1.0.10: Listen Together Room Sync, Anti-Drift Math & Playback Improvements.",
   "changelog": [
-    "Background Push Announcements: Receive real-time announcements directly on your device even when the app is closed",
-    "Ultra-Light 70MB Build: 42% APK size reduction (from 118MB to 70MB) via R8 optimization and dead code stripping",
-    "Zero-Jank Butter-Smooth UI: 0.00% frame drops and 200MB+ RAM freed during scrolling and playback",
-    "In-App Feedback: Send suggestions and bug reports directly from Settings & About screens",
-    "Fixed UI recomposition thrashing and optimized image caching memory footprint"
+    {
+      "title": "Listen Together Synchronisation Fixes",
+      "items": [
+        "Fixed multi-track desync after ~3 songs: Dynamic radio recommendations and queue updates now append seamlessly without resetting playback",
+        "Eliminated sudden 75% track backward seek: Guest now validates remote track IDs before applying drift adjustments, preventing accidental backward jumps",
+        "Fixed auto-pause before song playback: Ensured active playback state broadcast upon track changes and buffer completion",
+        "Enhanced room reconnect & recreation: Robust 3-tier metadata fallback and complete state cache teardown on room disconnect"
+      ]
+    }
   ]
 }

@@ -2282,7 +2282,10 @@ class MusicService : MediaLibraryService(), Player.Listener, PlaybackStatsListen
   ) {
 
     if (playbackState == Player.STATE_ENDED) {
-      if (cachedRepeatMode == REPEAT_MODE_ALL && player.mediaItemCount > 0) {
+      if (listenTogetherManager.isInRoom && !listenTogetherManager.isHost) {
+        timber.log.Timber.tag("MusicService").d("Guest reached STATE_ENDED in ListenTogether room, requesting sync from host")
+        listenTogetherManager.requestSync()
+      } else if (cachedRepeatMode == REPEAT_MODE_ALL && player.mediaItemCount > 0) {
         player.seekTo(0, 0)
         player.prepare()
         player.play()

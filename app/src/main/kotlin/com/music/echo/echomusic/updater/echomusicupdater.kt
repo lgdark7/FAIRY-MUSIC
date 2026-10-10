@@ -927,14 +927,20 @@ suspend fun checkForUpdate(
           val changelogArray = manifest.optJSONArray("changelog")
           if (changelogArray != null) {
             for (j in 0 until changelogArray.length()) {
-              val sectionObj = changelogArray.getJSONObject(j)
-              val title = sectionObj.getString("title")
-              val itemsArray = sectionObj.getJSONArray("items")
-              val itemsList = mutableListOf<String>()
-              for (k in 0 until itemsArray.length()) {
-                itemsList.add(itemsArray.getString(k))
+              val item = changelogArray.opt(j)
+              if (item is JSONObject) {
+                val title = item.optString("title", "Changes")
+                val itemsArray = item.optJSONArray("items")
+                val itemsList = mutableListOf<String>()
+                if (itemsArray != null) {
+                  for (k in 0 until itemsArray.length()) {
+                    itemsList.add(itemsArray.getString(k))
+                  }
+                }
+                changelogList.add(ChangelogSection(title, itemsList))
+              } else if (item is String) {
+                changelogList.add(ChangelogSection("What's New", listOf(item)))
               }
-              changelogList.add(ChangelogSection(title, itemsList))
             }
           }
           val apkUrl = manifest.optString("apkUrl", "")
