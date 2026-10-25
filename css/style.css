@@ -1,0 +1,446 @@
+/* ==========================================================================
+   FAIRY MUSIC — Cosmic Void & Stellar Monochrome Design System
+   Deep-space telemetry, vinyl optics, starlight physics, and tactile ergonomics.
+   100% human-engineered. Pure contrast, obsidian surfaces, and cosmic particle optics.
+   ========================================================================== */
+
+:root {
+  /* True Deep Space Void */
+  --bg-void: #020306;
+  --bg-space: #07080d;
+  --bg-card: rgba(12, 14, 20, 0.72);
+  --bg-card-hover: rgba(18, 22, 32, 0.88);
+  --bg-surface: #0a0c13;
+  --bg-input: #0e111a;
+
+  /* Restrained Monochrome & Starlight */
+  --star-white: #ffffff;
+  --star-silver: #f1f5f9;
+  --star-muted: #94a3b8;
+  --star-dim: #64748b;
+  --star-dark: #334155;
+
+  /* Single Stellar Accent (Deep Electric Cyan / Audio Wave) */
+  --accent-cyan: #38bdf8;
+  --accent-cyan-dim: rgba(56, 189, 248, 0.15);
+  --accent-cyan-border: rgba(56, 189, 248, 0.35);
+
+  /* Precision Hairline Borders */
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-medium: rgba(255, 255, 255, 0.18);
+  --border-active: rgba(255, 255, 255, 0.35);
+
+  /* Interactive Spotlight Position */
+  --mouse-x: 50%;
+  --mouse-y: 50%;
+}
+
+html {
+  scroll-behavior: smooth;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: var(--star-silver);
+  background-color: var(--bg-void);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+body {
+  overflow-x: hidden;
+  position: relative;
+  width: 100%;
+}
+
+h1, h2, h3, h4, .font-heading {
+  font-family: 'Outfit', -apple-system, sans-serif;
+  letter-spacing: -0.02em;
+}
+
+.font-mono {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Precision Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-void);
+}
+::-webkit-scrollbar-thumb {
+  background: #1e2230;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #2e3548;
+}
+
+/* Hide scrollbar for clean horizontal tab carousels */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Subtle Realistic Starlight & Meteor Canvas */
+#starfield-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Concentric Vinyl Orbit Rings Background (Echoes the Cat Logo Vinyl Grooves) */
+.vinyl-orbit-bg {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 1100px;
+  height: 1100px;
+  max-width: 95vw;
+  max-height: 95vw;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, transparent 20%, rgba(255, 255, 255, 0.012) 20.2%, transparent 20.4%),
+    radial-gradient(circle, transparent 35%, rgba(255, 255, 255, 0.016) 35.2%, transparent 35.4%),
+    radial-gradient(circle, transparent 50%, rgba(255, 255, 255, 0.02) 50.2%, transparent 50.4%),
+    radial-gradient(circle, transparent 65%, rgba(255, 255, 255, 0.014) 65.2%, transparent 65.4%),
+    radial-gradient(circle, transparent 80%, rgba(255, 255, 255, 0.009) 80.2%, transparent 80.4%);
+  pointer-events: none;
+  z-index: 0;
+  animation: cosmic-orbit-pulse 24s ease-in-out infinite alternate;
+}
+
+@keyframes cosmic-orbit-pulse {
+  0% {
+    transform: translate(-50%, -50%) scale(0.98);
+    opacity: 0.7;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.03);
+    opacity: 1;
+  }
+}
+
+/* Atmospheric Deep Space Gradient (Dark and Subtle) */
+.ambient-deep-space {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 1600px;
+  height: 850px;
+  background: radial-gradient(ellipse at 50% 0%, rgba(56, 189, 248, 0.08) 0%, rgba(15, 23, 42, 0.25) 45%, transparent 75%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Clean High-Contrast Headline */
+.headline-starlight {
+  color: #ffffff;
+  text-shadow: 0 0 40px rgba(255, 255, 255, 0.2);
+}
+
+/* ==========================================================================
+   Obsidian Card Components with Dynamic Spotlight Sheen
+   ========================================================================== */
+
+.card-obsidian {
+  background: var(--bg-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-subtle);
+  box-shadow: 0 8px 32px -4px rgba(0, 0, 0, 0.7);
+  transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Dynamic Spotlight Sheen layer on desktop hover */
+.card-obsidian::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(
+    600px circle at var(--mouse-x, -500px) var(--mouse-y, -500px),
+    rgba(255, 255, 255, 0.05),
+    transparent 40%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.card-obsidian:hover::before {
+  opacity: 1;
+}
+
+.card-obsidian:hover {
+  border-color: var(--border-medium);
+  background: var(--bg-card-hover);
+  transform: translateY(-3px);
+  box-shadow: 0 16px 45px -4px rgba(0, 0, 0, 0.95), 0 0 25px -5px rgba(255, 255, 255, 0.06);
+}
+
+/* Card inner icon box hover feedback */
+.card-obsidian:hover .card-icon-box {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+  transform: scale(1.05);
+}
+
+.card-icon-box {
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ==========================================================================
+   Tactile Button & Badge Physics
+   ========================================================================== */
+
+/* Primary Button — Solid Starlight White with Stardust Halo */
+.btn-starlight {
+  background: #ffffff;
+  color: #000000;
+  border: 1px solid #ffffff;
+  font-weight: 700;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 0 25px -4px rgba(255, 255, 255, 0.35);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-starlight:hover {
+  background: #f8fafc;
+  color: #000000;
+  transform: translateY(-2px);
+  box-shadow: 0 0 35px 2px rgba(255, 255, 255, 0.65), 0 0 50px rgba(56, 189, 248, 0.25);
+}
+
+.btn-starlight:active {
+  transform: translateY(0) scale(0.98);
+  box-shadow: 0 0 18px rgba(255, 255, 255, 0.4);
+}
+
+/* Secondary Button — Precision Dark Titanium */
+.btn-titanium {
+  background: rgba(15, 18, 26, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-subtle);
+  color: var(--star-silver);
+  font-weight: 600;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-titanium:hover {
+  background: rgba(24, 28, 42, 0.95);
+  border-color: var(--border-medium);
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.8), 0 0 15px rgba(255, 255, 255, 0.08);
+}
+
+.btn-titanium:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Official Distribution Badges Hover Physics */
+.badge-cosmic {
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  display: inline-block;
+}
+
+.badge-cosmic:hover {
+  transform: translateY(-2px) scale(1.03);
+  filter: drop-shadow(0 0 16px rgba(255, 255, 255, 0.3));
+}
+
+.badge-cosmic:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Copy Action Button Feedback */
+.btn-copy {
+  transition: all 0.18s ease;
+}
+
+.btn-copy:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.btn-copy:active {
+  transform: scale(0.95);
+}
+
+/* ==========================================================================
+   Phone Mockup Frame — Sleek Matte Obsidian Titanium
+   ========================================================================== */
+
+.mockup-frame {
+  width: 100%;
+  max-width: 340px;
+  height: 650px;
+  background: #000000;
+  border-radius: 44px;
+  border: 4px solid #1a1e2b;
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  z-index: 10;
+  transform: none !important;
+}
+
+.mockup-notch {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 86px;
+  height: 20px;
+  background: #111420;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+/* Screen Switcher Tabs — Segmented Control without Clipping */
+.screen-tab-btn {
+  flex: 1 1 0%;
+  padding: 7px 3px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  color: var(--star-muted);
+  border: 1px solid transparent;
+  text-align: center;
+  white-space: nowrap;
+  letter-spacing: -0.01em;
+}
+
+.screen-tab-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.screen-tab-btn.active {
+  color: #ffffff;
+  background: #161a26;
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.08);
+}
+
+/* Precision Equalizer Sliders */
+input[type=range].slider-clean {
+  -webkit-appearance: none;
+  background: #121522;
+  height: 4px;
+  border-radius: 4px;
+  outline: none;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+input[type=range].slider-clean::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #ffffff;
+  cursor: pointer;
+  border: 2px solid #000000;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+  transition: transform 0.1s ease;
+}
+
+input[type=range].slider-clean::-webkit-slider-thumb:hover {
+  transform: scale(1.3);
+  box-shadow: 0 0 16px rgba(255, 255, 255, 0.9);
+}
+
+/* Table Row Cosmic Hover */
+.table-row-cosmic {
+  transition: background-color 0.18s ease;
+}
+
+.table-row-cosmic:hover {
+  background-color: rgba(255, 255, 255, 0.035);
+}
+
+/* Toast Notification */
+#toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: rgba(16, 20, 28, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  padding: 12px 20px;
+  border-radius: 14px;
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.8), 0 0 1px 1px rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 100;
+  opacity: 0;
+  transform: translateY(10px);
+  pointer-events: none;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+#toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ==========================================================================
+   Mobile Ergonomics & Responsive Tuning
+   ========================================================================== */
+
+@media (max-width: 640px) {
+  .mockup-frame {
+    max-width: 290px;
+    height: 560px;
+    border-radius: 36px;
+    border-width: 3px;
+  }
+
+  .screen-tab-btn {
+    padding: 6px 1px;
+    font-size: 10px;
+    border-radius: 8px;
+  }
+
+  #toast {
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+    justify-content: center;
+  }
+}

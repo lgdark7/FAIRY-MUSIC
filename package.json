@@ -1,0 +1,18 @@
+{
+  "name": "fairymusic",
+  "version": "1.0.10",
+  "description": "Fairy Music — Official Release & Download Gateway",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node test_verify.js"
+  },
+  "keywords": [
+    "fairy-music",
+    "android",
+    "music-player",
+    "streaming"
+  ],
+  "author": "Fairy Music Team",
+  "license": "GPL-3.0"
+}

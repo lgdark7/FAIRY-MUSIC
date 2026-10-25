@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <title>Fairy Music — The Ad-Free Android Music Player</title>
+  <meta name="description" content="Official release portal for Fairy Music. An ad-free, high-fidelity music streaming application for Android featuring synced lyrics, real-time Listen Together rooms, and a 10-band studio parametric EQ.">
+  <meta name="theme-color" content="#020306">
+
+  <!-- OpenGraph / Social Meta Tags -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Fairy Music — The Ad-Free Android Music Player">
+  <meta property="og:description" content="Stream YouTube Music without ads. Synced word-by-word lyrics, Listen Together rooms, offline playback, and 10-band audio DSP. Free and open source.">
+  <meta property="og:image" content="assets/Fairy-Music.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="assets/Fairy-Music.png">
+  <link rel="apple-touch-icon" href="assets/Fairy-Music.png">
+
+  <!-- Typography: Plus Jakarta Sans, Outfit & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS Play CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            void: '#020306',
+            space: '#07080d',
+            obsidian: '#0c0e14',
+            surface: '#11141e'
+          },
+          fontFamily: {
+            heading: ['Outfit', '-apple-system', 'sans-serif'],
+            sans: ['"Plus Jakarta Sans"', '-apple-system', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body class="bg-[#020306] text-slate-200 min-h-screen antialiased selection:bg-white selection:text-black flex flex-col justify-between relative overflow-x-hidden">
+
+  <!-- Subtle Starlight & Meteor Particle Canvas -->
+  <canvas id="starfield-canvas"></canvas>
+
+  <!-- Main Navigation Header -->
+  <header class="sticky top-0 z-40 w-full backdrop-blur-xl bg-[#020306]/85 border-b border-white/10">
+    <div class="max-w-[1440px] mx-auto px-6 sm:px-10 lg:px-16 h-16 sm:h-20 py-4 flex items-center justify-between">
+
+      <!-- Brand Logo & Title -->
+      <a href="#" class="flex items-center gap-3 group">
+        <img src="assets/Fairy-Music.png" alt="Fairy Music" class="w-10 h-10 rounded-xl border border-white/15 shadow-md group-hover:scale-105 group-hover:shadow-[0_0_15px_rgba(255,255,255,0.2)] transition-all duration-200">
+        <div class="flex items-baseline gap-2.5">
+          <span class="text-lg font-bold font-heading tracking-tight text-white">Fairy Music</span>
+          <span class="text-[10px] px-2 py-0.5 rounded-md bg-white/5 border border-white/10 text-slate-400 font-mono">v1.0.10</span>
+        </div>
+      </a>
+
+      <!-- Desktop Nav -->
+      <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-400">
+        <a href="#features" class="hover:text-white transition-colors py-1">Features</a>
+        <a href="#preview" class="hover:text-white transition-colors py-1">Preview</a>
+        <a href="#equalizer" class="hover:text-white transition-colors py-1">Equalizer DSP</a>
+        <a href="#compare" class="hover:text-white transition-colors py-1">Compare</a>
+        <a href="#verify" class="hover:text-white transition-colors py-1">Integrity</a>
+        <a href="#install" class="hover:text-white transition-colors py-1">Install Guide</a>
+        <a href="#faq" class="hover:text-white transition-colors py-1">FAQ</a>
+      </nav>
+
+      <!-- Header Action Buttons -->
+      <div class="hidden sm:flex items-center gap-4">
+        <a href="https://github.com/lgdark7/FAIRY-MUSIC" target="_blank" rel="noopener noreferrer" class="p-2.5 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl border border-transparent hover:border-white/10 transition-colors" aria-label="GitHub Repository">
+          <i data-lucide="github" class="w-5 h-5"></i>
+        </a>
+        <a href="https://github.com/lgdark7/FAIRY-MUSIC/releases/latest" class="app-download-link btn-starlight px-5 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2">
+          <i data-lucide="download" class="w-4 h-4 text-black"></i>
+          <span>Download APK</span>
+        </a>
+      </div>
+
+      <!-- Mobile Menu Button (Accessible 44px Touch Target) -->
+      <button id="mobile-menu-btn" class="md:hidden w-11 h-11 flex items-center justify-center text-slate-400 hover:text-white rounded-xl hover:bg-white/10 border border-transparent hover:border-white/10 transition-all active:scale-95" aria-label="Toggle Navigation">
+        <i data-lucide="menu" class="w-5 h-5"></i>
+      </button>
+    </div>
+
+    <!-- Mobile Dropdown Menu -->
+    <div id="mobile-menu" class="hidden md:hidden px-6 pt-4 pb-7 bg-[#0a0c14]/95 backdrop-blur-2xl border-b border-white/10 space-y-3">
+      <a href="#features" class="block py-2.5 px-3 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-white/5 transition-colors">Features</a>
+      <a href="#preview" class="block py-2.5 px-3 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-white/5 transition-colors">App Preview</a>
+      <a href="#equalizer" class="block py-2.5 px-3 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-white/5 transition-colors">Equalizer DSP</a>
+      <a href="#compare" class="block py-2.5 px-3 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-white/5 transition-colors">Compare</a>
+      <a href="#verify" class="block py-2.5 px-3 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-white/5 transition-colors">Integrity</a>
+      <a href="#install" class="block py-2.5 px-3 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-white/5 transition-colors">Install Guide</a>
+      <a href="#faq" class="block py-2.5 px-3 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-white/5 transition-colors">FAQ</a>
+      <div class="pt-3 border-t border-white/10 flex flex-col gap-2">
+        <a href="https://github.com/lgdark7/FAIRY-MUSIC/releases/latest" class="app-download-link btn-starlight w-full py-3.5 rounded-xl font-bold text-center text-xs flex items-center justify-center gap-2">
+          <i data-lucide="download" class="w-4 h-4 text-black"></i>
+          <span>Download APK (<span class="app-version">v1.0.10</span>)</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Wrapper -->
+  <main class="flex-grow relative z-10">
+
+    <!-- Hero Section -->
+    <section class="py-16 sm:py-24 md:py-32 lg:py-36 border-b border-white/5 relative overflow-hidden">
+      <!-- Concentric Vinyl Orbit Ring Watermark with Cosmic Pulse -->
+      <div class="vinyl-orbit-bg"></div>
+      <div class="ambient-deep-space"></div>
+
+      <div class="max-w-[1440px] mx-auto px-6 sm:px-10 lg:px-16 relative z-10">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 xl:gap-24 items-center">
+
+          <!-- Left Content Column -->
+          <div class="lg:col-span-7 space-y-6 sm:space-y-7 text-left">
+
+            <!-- Clean Status Pill -->
+            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/5 border border-white/10 text-slate-300 text-xs font-mono">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#34d399]"></span>
+              <span>Official Android Release • No Ads • 100% Free</span>
+            </div>
+
+            <!-- Crisp High-Contrast Headline -->
+            <h1 class="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold font-heading text-white tracking-tight leading-[1.08] headline-starlight">
+              Stream music freely. <br>
+              Zero ads. Zero limits.
+            </h1>
+
+            <!-- Authentic Subtitle -->
+            <p class="text-base sm:text-lg lg:text-xl text-slate-300 leading-relaxed font-normal max-w-2xl">
+              A high-fidelity native music streaming app for Android. Stream the entire YouTube Music catalog in 320kbps without commercial interruptions. Built with word-by-word synced lyrics, real-time Listen Together rooms, offline playback, and a 10-band studio parametric equalizer.
+            </p>
+
+            <!-- Primary Actions -->
+            <div class="pt-2 space-y-5">
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+                <!-- Starlight Primary Button -->
+                <a href="https://github.com/lgdark7/FAIRY-MUSIC/releases/latest" class="app-download-link btn-starlight px-7 py-4 rounded-2xl text-base flex items-center justify-center sm:justify-start gap-3.5 w-full sm:w-auto shadow-2xl">
+                  <i data-lucide="download" class="w-5 h-5 text-black shrink-0"></i>
+                  <div class="text-left text-black">
+                    <div class="font-bold leading-tight">Download Fairy Music APK</div>
+                    <div class="text-xs font-mono text-slate-700 font-medium mt-0.5">
+                      <span class="app-version">v1.0.10</span> • <span class="app-size">71 MB</span> • Android 8.0+
+                    </div>
+                  </div>
+                </a>
+
+                <!-- Source Code Button -->
+                <a href="https://github.com/lgdark7/FAIRY-MUSIC" target="_blank" rel="noopener noreferrer" class="btn-titanium px-6 py-4 rounded-2xl text-sm flex items-center justify-center gap-2.5 w-full sm:w-auto">
+                  <i data-lucide="github" class="w-4 h-4 text-slate-300"></i>
+                  <span>GitHub Repository</span>
+                </a>
+              </div>
+
+              <!-- Streamlined Cryptographic Integrity Callout -->
+              <div class="flex flex-wrap items-center gap-4 py-3 px-4 rounded-xl bg-white/[0.03] border border-white/10 text-xs font-mono text-slate-400 backdrop-blur-md">
+                <div class="flex items-center gap-2">
+                  <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
+                  <span class="text-slate-300">SHA-256:</span>
+                  <span class="font-bold text-white select-all">717C0733...</span>
+                </div>
+                <a href="#verify" class="text-slate-400 hover:text-white underline underline-offset-4 decoration-slate-600 transition-colors ml-auto flex items-center gap-1 font-sans font-medium text-xs">
+                  <span>Verify Fingerprint</span>
+                  <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                </a>
+              </div>
+            </div>
+
+            <!-- Trust Highlights -->
+            <div class="flex flex-wrap items-center gap-5 sm:gap-6 pt-1 text-xs text-slate-400 font-medium">
+              <div class="flex items-center gap-1.5">
+                <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
+                <span>No Root / MicroG Required</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <i data-lucide="eye-off" class="w-4 h-4 text-slate-300"></i>
+                <span>Zero Trackers or Telemetry</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <i data-lucide="refresh-cw" class="w-4 h-4 text-slate-300"></i>
+                <span>In-App Auto Updater</span>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Right Phone Mockup Column -->
+          <div id="preview" class="lg:col-span-5 flex flex-col items-center pt-6 lg:pt-0">
+
+            <!-- Clean Segmented Tabs (Matches Phone Frame Width without Overflow or Clipping) -->
+            <div class="w-full max-w-[290px] sm:max-w-[340px] p-1 bg-[#0c0e16]/95 border border-white/10 rounded-2xl flex items-center justify-between mb-4 shadow-2xl backdrop-blur-md">
+              <button class="screen-tab-btn active" data-screen="player">Player</button>
+              <button class="screen-tab-btn" data-screen="lyrics">Lyrics</button>
+              <button class="screen-tab-btn" data-screen="together">Together</button>
+              <button class="screen-tab-btn" data-screen="equalizer">Equalizer</button>
+              <button class="screen-tab-btn" data-screen="spotify">Spotify</button>
+            </div>
+
+            <!-- Phone Frame -->
+            <div class="mockup-frame">
+              <div class="mockup-notch">
+                <span class="w-2.5 h-2.5 rounded-full bg-slate-900 border border-slate-700"></span>
+                <span class="w-1.5 h-1.5 rounded-full bg-slate-600"></span>
+              </div>
+
+              <!-- Top Status Bar -->
+              <div class="pt-3 px-6 pb-2 flex justify-between items-center text-[10px] font-mono text-slate-400 select-none z-20">
+                <span>9:41</span>
+                <div class="flex items-center gap-1.5">
+                  <i data-lucide="wifi" class="w-3 h-3 text-slate-300"></i>
+                  <i data-lucide="battery" class="w-3 h-3 text-slate-300"></i>
+                </div>
+              </div>
+
+              <!-- Screen Content Mount -->
+              <div id="mockup-screen-content" class="flex-grow overflow-hidden relative">
+                <!-- Injected dynamically by js/app.js -->
+              </div>
+
+              <!-- Android Home Indicator Bar -->
+              <div class="py-2 flex justify-center items-center">
+                <div class="w-28 h-1 bg-slate-700 rounded-full"></div>
+              </div>
+            </div>
+
+            <p class="text-[11px] text-slate-500 mt-3 font-mono">Interactive preview • Tap tabs to switch screens</p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- Core Features Section -->
+    <section id="features" class="py-20 sm:py-28 md:py-32 border-b border-white/5 relative">
+      <div class="max-w-[1440px] mx-auto px-6 sm:px-10 lg:px-16">
+
+        <div class="text-left max-w-2xl mb-12 sm:mb-16">
+          <h2 class="text-xs font-mono uppercase tracking-wider text-slate-400 font-semibold">Engineered For Quality</h2>
+          <h3 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold font-heading text-white mt-2">Every feature you need. None of the bloat.</h3>
+          <p class="text-slate-400 mt-2 text-xs sm:text-sm md:text-base">Built with AndroidX Media3 (ExoPlayer), Kotlin Coroutines, and pure floating-point audio DSP pipelines.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+
+          <!-- Card 1 -->
+          <div class="card-obsidian rounded-2xl p-7 sm:p-8 text-left">
+            <div class="card-icon-box w-11 h-11 rounded-xl bg-white/5 border border-white/10 text-white flex items-center justify-center mb-5">
+              <i data-lucide="play-circle" class="w-5 h-5"></i>
+            </div>
+            <h4 class="text-lg font-bold text-white font-heading">Ad-Free Background Audio</h4>
+            <p class="text-sm text-slate-400 mt-2.5 leading-relaxed">
+              Stream the complete YouTube Music catalog without audio or video advertisements. Screen-off playback, Android Auto support, and lock screen media session controls included.
+            </p>
+          </div>
+
+          <!-- Card 2 -->
+          <div class="card-obsidian rounded-2xl p-7 sm:p-8 text-left">
+            <div class="card-icon-box w-11 h-11 rounded-xl bg-white/5 border border-white/10 text-white flex items-center justify-center mb-5">
+              <i data-lucide="mic-2" class="w-5 h-5"></i>
+            </div>
+            <h4 class="text-lg font-bold text-white font-heading">Word-by-Word Synced Lyrics</h4>
+            <p class="text-sm text-slate-400 mt-2.5 leading-relaxed">
+              Syllable-level karaoke synchronization powered by LRCLIB and BetterLyrics. Includes Romanized transliteration for Asian tracks and instant multi-language translation.
+            </p>
+          </div>
+
+          <!-- Card 3 -->
+          <div class="card-obsidian rounded-2xl p-7 sm:p-8 text-left">
+            <div class="card-icon-box w-11 h-11 rounded-xl bg-white/5 border border-white/10 text-white flex items-center justify-center mb-5">
+              <i data-lucide="users" class="w-5 h-5"></i>
+            </div>
+            <h4 class="text-lg font-bold text-white font-heading">Listen Together Rooms</h4>
+            <p class="text-sm text-slate-400 mt-2.5 leading-relaxed">
+              Create a shared room code and listen to the same queue with friends in real-time. Built-in micro-pitch speed warping keeps playback locked within 50ms across networks.
+            </p>
+          </div>
+
+          <!-- Card 4 -->
+          <div class="card-obsidian rounded-2xl p-7 sm:p-8 text-left">
+            <div class="card-icon-box w-11 h-11 rounded-xl bg-white/5 border border-white/10 text-white flex items-center justify-center mb-5">
+              <i data-lucide="sliders" class="w-5 h-5"></i>
+            </div>
+            <h4 class="text-lg font-bold text-white font-heading">10-Band Parametric Audio DSP</h4>
+            <p class="text-sm text-slate-400 mt-2.5 leading-relaxed">
+              Hardware-accelerated floating-point PCM audio processor chain with cascading biquad filters, dynamic bass boost, stereo soundstage widening, and crossfade automixing.
+            </p>
+          </div>
+
+          <!-- Card 5 -->
+          <div class="card-obsidian rounded-2xl p-7 sm:p-8 text-left">
+            <div class="card-icon-box w-11 h-11 rounded-xl bg-white/5 border border-white/10 text-white flex items-center justify-center mb-5">
+              <i data-lucide="list-music" class="w-5 h-5"></i>
+            </div>
+            <h4 class="text-lg font-bold text-white font-heading">1-Click Spotify Playlist Import</h4>
+            <p class="text-sm text-slate-400 mt-2.5 leading-relaxed">
+              Paste any public Spotify or YouTube playlist URL. Fairy Music parses the tracks, matches metadata, and compiles your library instantly without requiring logins.
+            </p>
+          </div>
+
+          <!-- Card 6 -->
+          <div class="card-obsidian rounded-2xl p-7 sm:p-8 text-left">
+            <div class="card-icon-box w-11 h-11 rounded-xl bg-white/5 border border-white/10 text-white flex items-center justify-center mb-5">
+              <i data-lucide="hard-drive-download" class="w-5 h-5"></i>
+            </div>
+            <h4 class="text-lg font-bold text-white font-heading">Offline Audio Caching</h4>
+            <p class="text-sm text-slate-400 mt-2.5 leading-relaxed">
+              Download your favorite tracks or entire albums directly to device storage. Enjoy pristine 320kbps Opus playback on flights, subways, or whenever offline.
+            </p>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Interactive DSP Equalizer Sandbox -->
+    <section id="equalizer" class="py-20 sm:py-28 md:py-32 border-b border-white/5 bg-[#05060b] relative">
+      <div class="max-w-[1440px] mx-auto px-6 sm:px-10 lg:px-16">
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 sm:gap-16 items-center">
+
+          <div class="lg:col-span-5 text-left space-y-5">
+            <span class="text-xs font-mono uppercase tracking-wider text-slate-400 font-semibold">Audio Architecture</span>
+            <h3 class="text-2xl sm:text-3xl font-extrabold font-heading text-white">Studio-Grade Parametric Equalizer</h3>
+            <p class="text-slate-300 text-xs sm:text-sm md:text-base leading-relaxed">
+              Fairy Music implements custom floating-point PCM <code class="text-xs font-mono bg-white/5 border border-white/10 px-1.5 py-0.5 rounded text-white">AudioProcessor</code> chains directly inside the AndroidX Media3 pipeline.
+            </p>
+            <ul class="space-y-3 text-xs sm:text-sm text-slate-400">
+              <li class="flex items-center gap-2.5">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-400 shrink-0"></i>
+                <span>Cascading biquad filter algorithms for zero phase distortion</span>
+              </li>
+              <li class="flex items-center gap-2.5">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-400 shrink-0"></i>
+                <span>Stereo Widener expands headphone spatial separation</span>
+              </li>
+              <li class="flex items-center gap-2.5">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-400 shrink-0"></i>
+                <span>Automix crossfade with beat matching and silence trimming</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Interactive Slider Sandbox Card -->
+          <div class="lg:col-span-7 card-obsidian rounded-2xl p-6 sm:p-10">
+            <span class="text-xs font-mono uppercase tracking-wider text-slate-400 font-semibold">Audio Architecture</span>
+            <h3 class="text-2xl sm:text-3xl font-extrabold font-heading text-white">Studio-Grade Parametric Equalizer</h3>
+            <p class="text-slate-300 text-xs sm:text-sm md:text-base leading-relaxed">
+              Fairy Music implements custom floating-point PCM <code class="text-xs font-mono bg-white/5 border border-white/10 px-1.5 py-0.5 rounded text-white">AudioProcessor</code> chains directly inside the AndroidX Media3 pipeline.
+            </p>
+            <ul class="space-y-2 text-xs sm:text-sm text-slate-400">
+              <li class="flex items-center gap-2">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-400 shrink-0"></i>
+                <span>Cascading biquad filter algorithms for zero phase distortion</span>
+              </li>
+              <li class="flex items-center gap-2">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-400 shrink-0"></i>
+                <span>Stereo Widener expands headphone spatial separation</span>
+              </li>
+              <li class="flex items-center gap-2">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-400 shrink-0"></i>
+                <span>Automix crossfade with beat matching and silence trimming</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Interactive Slider Sandbox Card -->
+          <div class="lg:col-span-7 card-obsidian rounded-2xl p-5 sm:p-8">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-white/10 mb-6 gap-2">
+              <div>
+                <h4 class="text-base font-bold text-white">5-Band Equalizer Sandbox</h4>
+                <p class="text-xs text-slate-400">Drag sliders to test frequency response</p>
+              </div>
+              <span class="px-2.5 py-1 rounded bg-white/5 text-slate-300 border border-white/10 font-mono text-xs w-max">AudioProcessor Chain</span>
+            </div>
+
+            <div class="grid grid-cols-5 gap-2 sm:gap-6 text-center">
+
+              <div class="space-y-3">
+                <span class="text-[11px] sm:text-xs font-mono text-white font-semibold eq-val">+4 dB</span>
+                <div class="h-36 sm:h-40 flex items-center justify-center">
+                  <input type="range" min="-12" max="12" value="4" class="slider-clean demo-eq-slider -rotate-90 w-28 sm:w-32 cursor-pointer" aria-label="Sub Bass Slider">
+                </div>
+                <div class="text-[10px] sm:text-[11px] font-mono text-slate-300">60 Hz</div>
+                <div class="text-[8px] sm:text-[9px] text-slate-500 uppercase font-mono truncate">Sub Bass</div>
+              </div>
+
+              <div class="space-y-3">
+                <span class="text-[11px] sm:text-xs font-mono text-white font-semibold eq-val">+2 dB</span>
+                <div class="h-36 sm:h-40 flex items-center justify-center">
+                  <input type="range" min="-12" max="12" value="2" class="slider-clean demo-eq-slider -rotate-90 w-28 sm:w-32 cursor-pointer" aria-label="Bass Slider">
+                </div>
+                <div class="text-[10px] sm:text-[11px] font-mono text-slate-300">230 Hz</div>
+                <div class="text-[8px] sm:text-[9px] text-slate-500 uppercase font-mono truncate">Bass</div>
+              </div>
+
+              <div class="space-y-3">
+                <span class="text-[11px] sm:text-xs font-mono text-white font-semibold eq-val">0 dB</span>
+                <div class="h-36 sm:h-40 flex items-center justify-center">
+                  <input type="range" min="-12" max="12" value="0" class="slider-clean demo-eq-slider -rotate-90 w-28 sm:w-32 cursor-pointer" aria-label="Mid Slider">
+                </div>
+                <div class="text-[10px] sm:text-[11px] font-mono text-slate-300">910 Hz</div>
+                <div class="text-[8px] sm:text-[9px] text-slate-500 uppercase font-mono truncate">Mid</div>
+              </div>
+
+              <div class="space-y-3">
+                <span class="text-[11px] sm:text-xs font-mono text-white font-semibold eq-val">+3 dB</span>
+                <div class="h-36 sm:h-40 flex items-center justify-center">
+                  <input type="range" min="-12" max="12" value="3" class="slider-clean demo-eq-slider -rotate-90 w-28 sm:w-32 cursor-pointer" aria-label="Presence Slider">
+                </div>
+                <div class="text-[10px] sm:text-[11px] font-mono text-slate-300">3.6 kHz</div>
+                <div class="text-[8px] sm:text-[9px] text-slate-500 uppercase font-mono truncate">Presence</div>
+              </div>
+
+              <div class="space-y-3">
+                <span class="text-[11px] sm:text-xs font-mono text-white font-semibold eq-val">+5 dB</span>
+                <div class="h-36 sm:h-40 flex items-center justify-center">
+                  <input type="range" min="-12" max="12" value="5" class="slider-clean demo-eq-slider -rotate-90 w-28 sm:w-32 cursor-pointer" aria-label="Air Slider">
+                </div>
+                <div class="text-[10px] sm:text-[11px] font-mono text-slate-300">14 kHz</div>
+                <div class="text-[8px] sm:text-[9px] text-slate-500 uppercase font-mono truncate">Air</div>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Side-by-Side Comparison Matrix -->
+    <section id="compare" class="py-20 sm:py-28 md:py-32 border-b border-white/5 relative">
+      <div class="max-w-[1440px] mx-auto px-6 sm:px-10 lg:px-16">
+
+        <div class="text-center max-w-2xl mx-auto mb-12 sm:mb-16">
+          <h2 class="text-xs font-mono uppercase tracking-wider text-slate-400 font-semibold">Honest Comparison</h2>
+          <h3 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold font-heading text-white mt-2">Why Switch to Fairy Music?</h3>
+          <p class="text-slate-400 mt-2 text-xs sm:text-sm md:text-base">See how Fairy Music compares to conventional streaming apps on Android.</p>
+        </div>
+
+        <!-- Mobile Scroll Pill Indicator -->
+        <div class="md:hidden flex items-center justify-center gap-1.5 text-xs text-slate-400 mb-4 font-mono">
+          <i data-lucide="arrow-left-right" class="w-3.5 h-3.5"></i>
+          <span>Swipe horizontally to compare</span>
+        </div>
+
+        <div class="overflow-x-auto rounded-2xl border border-white/10 shadow-2xl">
+          <table class="w-full text-left border-collapse backdrop-blur-md min-w-[620px]">
+            <thead>
+              <tr class="bg-[#0a0c14] border-b border-white/10 text-xs font-mono uppercase text-slate-400">
+                <th class="p-5 sm:p-6">Feature</th>
+                <th class="p-5 sm:p-6 text-white font-bold bg-white/5 border-x border-white/10">Fairy Music</th>
+                <th class="p-5 sm:p-6">Spotify Free</th>
+                <th class="p-5 sm:p-6">YouTube Music Free</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-white/5 text-xs sm:text-sm">
+              <tr class="table-row-cosmic">
+                <td class="p-5 sm:p-6 font-medium text-white">Audio & Video Ads</td>
+                <td class="p-5 sm:p-6 text-emerald-400 font-semibold bg-white/5 border-x border-white/10">Zero Ads Ever</td>
+                <td class="p-5 sm:p-6 text-rose-400">Frequent Ads</td>
+                <td class="p-5 sm:p-6 text-rose-400">Frequent Ads</td>
+              </tr>
+              <tr class="table-row-cosmic">
+                <td class="p-5 sm:p-6 font-medium text-white">Background / Screen-Off Play</td>
+                <td class="p-5 sm:p-6 text-emerald-400 font-semibold bg-white/5 border-x border-white/10">Full Support</td>
+                <td class="p-5 sm:p-6 text-slate-300">Yes (Shuffle only)</td>
+                <td class="p-5 sm:p-6 text-rose-400">Audio Stops on Screen Off</td>
+              </tr>
+              <tr class="table-row-cosmic">
+                <td class="p-5 sm:p-6 font-medium text-white">Listen Together Sync</td>
+                <td class="p-5 sm:p-6 text-emerald-400 font-semibold bg-white/5 border-x border-white/10">Built-in (&lt;50ms drift)</td>
+                <td class="p-5 sm:p-6 text-rose-400">Requires Premium ($11.99/mo)</td>
+                <td class="p-5 sm:p-6 text-rose-400">Not Available</td>
+              </tr>
+              <tr class="table-row-cosmic">
+                <td class="p-5 sm:p-6 font-medium text-white">Word-by-Word Synced Lyrics</td>
+                <td class="p-5 sm:p-6 text-emerald-400 font-semibold bg-white/5 border-x border-white/10">Yes (LRCLIB + Translations)</td>
+                <td class="p-5 sm:p-6 text-slate-400">Line-level only</td>
+                <td class="p-5 sm:p-6 text-slate-400">Unsynchronized static</td>
+              </tr>
+              <tr class="table-row-cosmic">
+                <td class="p-5 sm:p-6 font-medium text-white">10-Band Parametric Equalizer</td>
+                <td class="p-5 sm:p-6 text-emerald-400 font-semibold bg-white/5 border-x border-white/10">Built-in Floating-Point DSP</td>
+                <td class="p-5 sm:p-6 text-slate-400">Basic 5-band</td>
+                <td class="p-5 sm:p-6 text-slate-400">Device default only</td>
+              </tr>
+              <tr class="table-row-cosmic">
+                <td class="p-5 sm:p-6 font-medium text-white">Account Required</td>
+                <td class="p-5 sm:p-6 text-emerald-400 font-semibold bg-white/5 border-x border-white/10">No Account Needed</td>
+                <td class="p-5 sm:p-6 text-slate-400">Mandatory Login</td>
+                <td class="p-5 sm:p-6 text-slate-400">Mandatory Google Account</td>
+              </tr>
+              <tr class="table-row-cosmic">
+                <td class="p-5 sm:p-6 font-medium text-white">Trackers & Telemetry</td>
+                <td class="p-5 sm:p-6 text-emerald-400 font-semibold bg-white/5 border-x border-white/10">Zero Telemetry SDKs</td>
+                <td class="p-5 sm:p-6 text-rose-400">Extensive tracking</td>
+                <td class="p-5 sm:p-6 text-rose-400">Google ecosystem tracking</td>
+              </tr>
+              <tr class="table-row-cosmic">
+                <td class="p-5 sm:p-6 font-medium text-white">Cost</td>
+                <td class="p-5 sm:p-6 text-emerald-400 font-bold bg-white/5 border-x border-white/10">100% Free Forever</td>
+                <td class="p-5 sm:p-6 text-slate-300">Free with limits</td>
+                <td class="p-5 sm:p-6 text-slate-300">Free with limits</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Cryptographic Verification & Security -->
+    <section id="verify" class="py-20 sm:py-28 md:py-32 border-b border-white/5 bg-[#05060b] relative">
+      <div class="max-w-[1440px] mx-auto px-6 sm:px-10 lg:px-16">
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 sm:gap-16 items-center">
+
+          <div class="lg:col-span-6 text-left space-y-5">
+            <span class="text-xs font-mono uppercase tracking-wider text-slate-400 font-semibold">Security & Integrity</span>
+            <h3 class="text-2xl sm:text-3xl font-extrabold font-heading text-white">Verify Your APK Before Installing</h3>
+            <p class="text-slate-300 text-xs sm:text-sm md:text-base leading-relaxed">
+              Because Fairy Music is distributed directly as an APK rather than through Google Play Store, every release is cryptographically signed with our official developer keystore.
+            </p>
+            <p class="text-slate-400 text-xs sm:text-sm leading-relaxed">
+              Fairy Music includes an in-app <code class="text-white bg-white/10 px-1 rounded font-mono">AppSecurityGuard</code> module that validates the APK signing certificate on startup, preventing tampered or repackaged APKs from executing.
+            </p>
+          </div>
+
+          <!-- Code Box -->
+          <div class="lg:col-span-6 card-obsidian rounded-2xl p-6 sm:p-8 text-left space-y-5 font-mono text-xs">
+            <div class="flex items-center justify-between text-slate-400 pb-3 border-b border-white/10">
+              <span class="font-bold text-white flex items-center gap-2">
+                <i data-lucide="shield" class="w-4 h-4 text-white"></i>
+                Official SHA-256 Fingerprint
+              </span>
+              <span class="text-[11px] text-slate-500">Android Keystore</span>
+            </div>
+
+            <div class="p-3.5 rounded-xl bg-black border border-white/10 text-emerald-400 select-all break-all text-[11px] leading-relaxed shadow-inner font-mono">
+              717C073360660DAEE10ED18DB94E05E3BC33E026A25709D5BDDD468A014A6C44
+            </div>
+
+            <div class="space-y-1.5">
+              <span class="text-slate-500 text-[10px] uppercase">Verify via Terminal</span>
+              <div class="p-3.5 rounded-xl bg-black border border-white/10 text-slate-300 select-all overflow-x-auto text-[11px] shadow-inner font-mono">
+                apksigner verify --print-certs FAIRY-MUSIC-v1.0.10.apk
+              </div>
+            </div>
+
+            <button data-copy="717C073360660DAEE10ED18DB94E05E3BC33E026A25709D5BDDD468A014A6C44" class="btn-copy w-full py-3 bg-white/5 text-slate-200 hover:text-white rounded-xl border border-white/10 font-sans font-medium text-xs flex items-center justify-center gap-2">
+              <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+              <span>Copy SHA-256 Fingerprint</span>
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Installation Guide & Release Notes -->
+    <section id="install" class="py-20 sm:py-28 md:py-32 border-b border-white/5 relative">
+      <div class="max-w-[1440px] mx-auto px-6 sm:px-10 lg:px-16">
+
+        <div class="text-left max-w-2xl mb-12 sm:mb-16">
+          <h2 class="text-xs font-mono uppercase tracking-wider text-slate-400 font-semibold">Installation Guide</h2>
+          <h3 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold font-heading text-white mt-2">How to Install on Android</h3>
+          <p class="text-slate-400 mt-2 text-xs sm:text-sm md:text-base">Installing an APK on modern Android devices takes less than 30 seconds.</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-left mb-12 sm:mb-16">
+
+          <div class="card-obsidian rounded-2xl p-6 space-y-3">
+            <span class="text-xs font-mono font-bold text-slate-400">STEP 01</span>
+            <h4 class="text-base font-bold text-white">Download APK</h4>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              Tap the download button to save the official <code class="text-slate-200">.apk</code> file to your device.
+            </p>
+          </div>
+
+          <div class="card-obsidian rounded-2xl p-6 space-y-3">
+            <span class="text-xs font-mono font-bold text-slate-400">STEP 02</span>
+            <h4 class="text-base font-bold text-white">Open File</h4>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              Open your browser's download drawer or device Files manager and tap the downloaded APK.
+            </p>
+          </div>
+
+          <div class="card-obsidian rounded-2xl p-6 space-y-3">
+            <span class="text-xs font-mono font-bold text-slate-400">STEP 03</span>
+            <h4 class="text-base font-bold text-white">Allow Unknown Apps</h4>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              If prompted by Android, toggle "Allow from this source" for your browser in Settings.
+            </p>
+          </div>
+
+          <div class="card-obsidian rounded-2xl p-6 space-y-3">
+            <span class="text-xs font-mono font-bold text-slate-400">STEP 04</span>
+            <h4 class="text-base font-bold text-white">Install & Enjoy</h4>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              Tap "Install". The in-app updater will notify you automatically when new updates release!
+            </p>
+          </div>
+
+        </div>
+
+        <!-- Release Notes Box (Populated by js/app.js) -->
+        <div class="card-obsidian rounded-2xl p-6 sm:p-10 text-left">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-5 border-b border-white/10 mb-6 gap-3">
+            <div>
+              <div class="flex items-center gap-2.5">
+                <span class="text-base sm:text-lg font-bold text-white font-heading">Latest Release Changelog</span>
+                <span class="app-version text-xs font-mono px-2.5 py-0.5 rounded bg-white/10 text-white border border-white/20">v1.0.10</span>
+              </div>
+              <p class="text-xs text-slate-400 mt-1">Released on <span class="app-date">October 10, 2026</span></p>
+            </div>
+            <a href="https://github.com/lgdark7/FAIRY-MUSIC/releases" target="_blank" rel="noopener noreferrer" class="text-xs text-slate-400 hover:text-white flex items-center gap-1 font-mono transition-colors">
+              <span>All Releases</span>
+              <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+            </a>
+          </div>
+
+          <!-- Dynamic changelog injection point -->
+          <div id="changelog-items">
+            <!-- Fallback changelog -->
+            <div class="space-y-2">
+              <h5 class="text-sm font-semibold text-white">Listen Together Synchronisation & Stability</h5>
+              <ul class="space-y-1.5 text-xs text-slate-400 pl-4 list-disc marker:text-slate-600">
+                <li>Fixed multi-track desync after consecutive song playback in shared rooms</li>
+                <li>Eliminated sudden backward seek jumps by validating remote track IDs</li>
+                <li>Enhanced reconnect handshake with robust 3-tier metadata fallback</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Frequently Asked Questions -->
+    <section id="faq" class="py-20 sm:py-28 md:py-32 relative">
+      <div class="max-w-5xl mx-auto px-6 sm:px-8">
+
+        <div class="text-center max-w-2xl mx-auto mb-12 sm:mb-16">
+          <h2 class="text-xs font-mono uppercase tracking-wider text-slate-400 font-semibold">Common Inquiries</h2>
+          <h3 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold font-heading text-white mt-2">Frequently Asked Questions</h3>
+          <p class="text-slate-400 mt-2 text-xs sm:text-sm">Clear answers regarding installation, privacy, and updates.</p>
+        </div>
+
+        <div class="space-y-4 sm:space-y-5 text-left">
+
+          <!-- FAQ Item 1 -->
+          <div class="faq-item card-obsidian rounded-2xl overflow-hidden">
+            <button class="faq-trigger w-full p-5 sm:p-6 flex items-center justify-between text-left font-semibold text-sm sm:text-base text-white">
+              <span>Why isn't Fairy Music on the Google Play Store?</span>
+              <i data-lucide="chevron-down" class="faq-icon w-4 h-4 text-slate-400 transition-transform duration-200 shrink-0 ml-2"></i>
+            </button>
+            <div class="faq-content hidden px-5 sm:px-6 pb-5 sm:pb-6 text-xs sm:text-sm text-slate-400 leading-relaxed border-t border-white/5 pt-4">
+              Google Play Developer Policies prohibit apps that provide ad-free background streaming of YouTube audio. To remain free, unrestricted, and independent of store gatekeepers, Fairy Music is distributed directly through our official website and GitHub releases.
+            </div>
+          </div>
+
+          <!-- FAQ Item 2 -->
+          <div class="faq-item card-obsidian rounded-2xl overflow-hidden">
+            <button class="faq-trigger w-full p-5 sm:p-6 flex items-center justify-between text-left font-semibold text-sm sm:text-base text-white">
+              <span>Is it safe to install this APK on my phone?</span>
+              <i data-lucide="chevron-down" class="faq-icon w-4 h-4 text-slate-400 transition-transform duration-200 shrink-0 ml-2"></i>
+            </button>
+            <div class="faq-content hidden px-5 sm:px-6 pb-5 sm:pb-6 text-xs sm:text-sm text-slate-400 leading-relaxed border-t border-white/5 pt-4">
+              Yes, 100%. Fairy Music contains zero telemetry, trackers, or adware. Every release is cryptographically signed with our verified developer certificate. You can independently verify the SHA-256 fingerprint shown on this site using Android's official <code class="text-white font-mono">apksigner</code> tool.
+            </div>
+          </div>
+
+          <!-- FAQ Item 3 -->
+          <div class="faq-item card-obsidian rounded-2xl overflow-hidden">
+            <button class="faq-trigger w-full p-5 sm:p-6 flex items-center justify-between text-left font-semibold text-sm sm:text-base text-white">
+              <span>Do I need Root or MicroG?</span>
+              <i data-lucide="chevron-down" class="faq-icon w-4 h-4 text-slate-400 transition-transform duration-200 shrink-0 ml-2"></i>
+            </button>
+            <div class="faq-content hidden px-5 sm:px-6 pb-5 sm:pb-6 text-xs sm:text-sm text-slate-400 leading-relaxed border-t border-white/5 pt-4">
+              No. Fairy Music operates completely standalone without root permissions, MicroG, or Google Play Services. It runs on any Android phone or tablet running Android 8.0 (Oreo) or newer.
+            </div>
+          </div>
+
+          <!-- FAQ Item 4 -->
+          <div class="faq-item card-obsidian rounded-2xl overflow-hidden">
+            <button class="faq-trigger w-full p-5 sm:p-6 flex items-center justify-between text-left font-semibold text-sm sm:text-base text-white">
+              <span>How do I receive future app updates?</span>
+              <i data-lucide="chevron-down" class="faq-icon w-4 h-4 text-slate-400 transition-transform duration-200 shrink-0 ml-2"></i>
+            </button>
+            <div class="faq-content hidden px-5 sm:px-6 pb-5 sm:pb-6 text-xs sm:text-sm text-slate-400 leading-relaxed border-t border-white/5 pt-4">
+              Fairy Music includes a built-in in-app updater that automatically polls our release gateway for new versions. When an update is ready, a clean in-app prompt will let you update with a single tap. You can also download newer APKs directly from this website.
+            </div>
+          </div>
+
+          <!-- FAQ Item 5 -->
+          <div class="faq-item card-obsidian rounded-2xl overflow-hidden">
+            <button class="faq-trigger w-full p-5 sm:p-6 flex items-center justify-between text-left font-semibold text-sm sm:text-base text-white">
+              <span>Can I import my existing Spotify playlists?</span>
+              <i data-lucide="chevron-down" class="faq-icon w-4 h-4 text-slate-400 transition-transform duration-200 shrink-0 ml-2"></i>
+            </button>
+            <div class="faq-content hidden px-5 sm:px-6 pb-5 sm:pb-6 text-xs sm:text-sm text-slate-400 leading-relaxed border-t border-white/5 pt-4">
+              Yes. Simply copy any public Spotify playlist URL and paste it into Fairy Music's Import screen. The app automatically resolves each song, matches high-bitrate audio streams, and adds them to your local library.
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Clean Developer Footer -->
+  <footer class="border-t border-white/10 bg-[#020306] py-16 sm:py-20 text-xs text-slate-400 relative z-10">
+    <div class="max-w-[1440px] mx-auto px-6 sm:px-10 lg:px-16">
+
+      <div class="flex flex-col md:flex-row items-center justify-between gap-6 pb-10 border-b border-white/5 text-center md:text-left">
+        <div class="flex items-center gap-3.5">
+          <img src="assets/Fairy-Music.png" alt="Fairy Music" class="w-9 h-9 rounded-xl border border-white/15 shadow-md">
+          <div>
+            <div class="font-bold text-white font-heading text-sm">Fairy Music</div>
+            <p class="text-[11px] text-slate-500">The lightweight, ad-free music player for Android.</p>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-center gap-5 text-slate-400 font-medium">
+          <a href="https://github.com/lgdark7/FAIRY-MUSIC" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors flex items-center gap-1.5 py-1">
+            <i data-lucide="github" class="w-4 h-4"></i>
+            <span>GitHub</span>
+          </a>
+          <a href="https://github.com/lgdark7/FAIRY-MUSIC/releases" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors flex items-center gap-1.5 py-1">
+            <i data-lucide="tag" class="w-4 h-4"></i>
+            <span>Releases</span>
+          </a>
+          <a href="https://www.instagram.com/lg_dark_7" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors flex items-center gap-1.5 py-1">
+            <i data-lucide="instagram" class="w-4 h-4"></i>
+            <span>@lg_dark_7</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-slate-500 text-[11px] text-center sm:text-left">
+        <div>
+          Developed by <a href="https://github.com/lgdark7" target="_blank" rel="noopener noreferrer" class="text-slate-300 hover:text-white underline decoration-slate-700">Benny (@lgdark7)</a>. Open source under GPL-3.0.
+        </div>
+        <div>
+          Not affiliated with Google LLC, YouTube, or Spotify AB.
+        </div>
+      </div>
+
+    </div>
+  </footer>
+
+  <!-- Toast Notification Box -->
+  <div id="toast">
+    <i data-lucide="check" class="w-4 h-4 text-white"></i>
+    <span id="toast-msg">Copied to clipboard!</span>
+  </div>
+
+  <!-- JavaScript Engine -->
+  <script src="js/app.js"></script>
+</body>
+</html>
