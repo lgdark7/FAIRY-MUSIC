@@ -88,74 +88,74 @@ h1, h2, h3, h4, .font-heading {
 
 /* Ambient Cinematic Video Background */
 .ambient-video-bg {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  pointer-events: none;
-  z-index: 0;
-  overflow: hidden;
-  background-color: var(--bg-void);
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  pointer-events: none !important;
+  z-index: 0 !important;
+  overflow: hidden !important;
+  background-color: var(--bg-void) !important;
 }
 
 .ambient-video-element {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  min-width: 100%;
-  min-height: 100%;
-  width: auto;
-  height: auto;
-  transform: translate(-50%, -50%);
-  object-fit: cover;
-  opacity: 0.36;
-  filter: contrast(1.15) brightness(0.85) saturate(1.25);
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  min-width: 100% !important;
+  min-height: 100% !important;
+  width: auto !important;
+  height: auto !important;
+  transform: translate(-50%, -50%) !important;
+  object-fit: cover !important;
+  opacity: 0.36 !important;
+  filter: contrast(1.15) brightness(0.85) saturate(1.25) !important;
   transition: opacity 0.5s ease;
 }
 
 .ambient-video-overlay {
-  position: absolute;
-  inset: 0;
+  position: absolute !important;
+  inset: 0 !important;
   background:
     radial-gradient(ellipse at 50% 30%, rgba(2, 3, 6, 0.4) 0%, rgba(2, 3, 6, 0.75) 65%, #020306 100%),
-    linear-gradient(180deg, rgba(2, 3, 6, 0.35) 0%, rgba(2, 3, 6, 0.72) 50%, rgba(2, 3, 6, 0.96) 100%);
-  pointer-events: none;
+    linear-gradient(180deg, rgba(2, 3, 6, 0.35) 0%, rgba(2, 3, 6, 0.72) 50%, rgba(2, 3, 6, 0.96) 100%) !important;
+  pointer-events: none !important;
 }
 
 /* Subtle Realistic Starlight & Meteor Canvas */
 #starfield-canvas {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  pointer-events: none;
-  z-index: 1;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  pointer-events: none !important;
+  z-index: 1 !important;
 }
 
 /* Audio Control Floating Pill */
 .ambient-audio-toggle {
-  position: fixed;
-  bottom: 24px;
-  left: 24px;
-  z-index: 45;
-  background: rgba(12, 14, 20, 0.85);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: var(--star-silver);
-  padding: 8px 14px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-family: 'JetBrains Mono', monospace;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 1px 1px rgba(255, 255, 255, 0.08);
-  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  position: fixed !important;
+  bottom: 24px !important;
+  left: 24px !important;
+  z-index: 45 !important;
+  background: rgba(12, 14, 20, 0.85) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  color: var(--star-silver) !important;
+  padding: 8px 14px !important;
+  border-radius: 999px !important;
+  font-size: 11px !important;
+  font-family: 'JetBrains Mono', monospace !important;
+  font-weight: 500 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  cursor: pointer !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 1px 1px rgba(255, 255, 255, 0.08) !important;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 .ambient-audio-toggle:hover {

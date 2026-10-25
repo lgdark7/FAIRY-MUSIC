@@ -48,25 +48,25 @@
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
-  <!-- Custom Stylesheet -->
-  <link rel="stylesheet" href="css/style.css">
+  <!-- Custom Stylesheet (Cache-Busted v2.2.0) -->
+  <link rel="stylesheet" href="css/style.css?v=2.2.0">
 </head>
 
 <body class="bg-[#020306] text-slate-200 min-h-screen antialiased selection:bg-white selection:text-black flex flex-col justify-between relative overflow-x-hidden">
 
-  <!-- Ambient Video Background (Horizontal Obito / Cosmic Dimension) -->
-  <div class="ambient-video-bg">
-    <video id="bg-video" class="ambient-video-element" autoplay muted loop playsinline preload="auto">
+  <!-- Ambient Video Background (Fixed Fullscreen Cosmic Layer) -->
+  <div class="ambient-video-bg fixed inset-0 w-screen h-screen pointer-events-none overflow-hidden z-0 bg-[#020306]" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 0; overflow: hidden; background-color: #020306;">
+    <video id="bg-video" class="ambient-video-element absolute top-1/2 left-1/2 min-w-full min-h-full -translate-x-1/2 -translate-y-1/2 object-cover" autoplay muted loop playsinline preload="auto" style="position: absolute; top: 50%; left: 50%; min-width: 100%; min-height: 100%; width: auto; height: auto; transform: translate(-50%, -50%); object-fit: cover; opacity: 0.36; filter: contrast(1.15) brightness(0.85) saturate(1.25);">
       <source src="assets/bg-video.mp4" type="video/mp4">
     </video>
-    <div class="ambient-video-overlay"></div>
+    <div class="ambient-video-overlay absolute inset-0 pointer-events-none" style="position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 50% 30%, rgba(2, 3, 6, 0.4) 0%, rgba(2, 3, 6, 0.75) 65%, #020306 100%), linear-gradient(180deg, rgba(2, 3, 6, 0.35) 0%, rgba(2, 3, 6, 0.72) 50%, rgba(2, 3, 6, 0.96) 100%);"></div>
   </div>
 
   <!-- Subtle Starlight & Meteor Particle Canvas -->
-  <canvas id="starfield-canvas"></canvas>
+  <canvas id="starfield-canvas" class="fixed inset-0 w-screen h-screen pointer-events-none z-[1]" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 1;"></canvas>
 
   <!-- Ambient Audio Toggle Pill -->
-  <button id="bg-audio-toggle" class="ambient-audio-toggle" aria-label="Toggle Background Audio">
+  <button id="bg-audio-toggle" class="ambient-audio-toggle fixed bottom-6 left-6 z-[45]" style="position: fixed; bottom: 24px; left: 24px; z-index: 45;" aria-label="Toggle Background Audio">
     <i data-lucide="volume-x" class="w-3.5 h-3.5 text-slate-300"></i>
     <span id="bg-audio-label">Sound Muted</span>
   </button>
@@ -792,7 +792,7 @@
     <span id="toast-msg">Copied to clipboard!</span>
   </div>
 
-  <!-- JavaScript Engine -->
-  <script src="js/app.js"></script>
+  <!-- JavaScript Engine (Cache-Busted v2.2.0) -->
+  <script src="js/app.js?v=2.2.0"></script>
 </body>
 </html>
