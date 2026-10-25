@@ -48,8 +48,8 @@
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
-  <!-- Custom Stylesheet (Cache-Busted v2.3.0) -->
-  <link rel="stylesheet" href="css/style.css?v=2.3.0">
+  <!-- Custom Stylesheet (Cache-Busted v2.4.0) -->
+  <link rel="stylesheet" href="css/style.css?v=2.4.0">
 </head>
 
 <body class="bg-[#020306] text-slate-200 min-h-screen antialiased selection:bg-white selection:text-black flex flex-col justify-between relative overflow-x-hidden">
@@ -345,7 +345,7 @@
     </section>
 
     <!-- Interactive DSP Equalizer Sandbox -->
-    <section id="equalizer" class="py-20 sm:py-28 md:py-32 border-b border-white/5 bg-[#05060b] relative">
+    <section id="equalizer" class="py-20 sm:py-28 md:py-32 border-b border-white/5 relative">
       <div class="max-w-[1440px] mx-auto px-6 sm:px-10 lg:px-16">
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 sm:gap-16 items-center">
@@ -366,29 +366,6 @@
                 <span>Stereo Widener expands headphone spatial separation</span>
               </li>
               <li class="flex items-center gap-2.5">
-                <i data-lucide="check" class="w-4 h-4 text-emerald-400 shrink-0"></i>
-                <span>Automix crossfade with beat matching and silence trimming</span>
-              </li>
-            </ul>
-          </div>
-
-          <!-- Interactive Slider Sandbox Card -->
-          <div class="lg:col-span-7 card-obsidian rounded-2xl p-6 sm:p-10">
-            <span class="text-xs font-mono uppercase tracking-wider text-slate-400 font-semibold">Audio Architecture</span>
-            <h3 class="text-2xl sm:text-3xl font-extrabold font-heading text-white">Studio-Grade Parametric Equalizer</h3>
-            <p class="text-slate-300 text-xs sm:text-sm md:text-base leading-relaxed">
-              Fairy Music implements custom floating-point PCM <code class="text-xs font-mono bg-white/5 border border-white/10 px-1.5 py-0.5 rounded text-white">AudioProcessor</code> chains directly inside the AndroidX Media3 pipeline.
-            </p>
-            <ul class="space-y-2 text-xs sm:text-sm text-slate-400">
-              <li class="flex items-center gap-2">
-                <i data-lucide="check" class="w-4 h-4 text-emerald-400 shrink-0"></i>
-                <span>Cascading biquad filter algorithms for zero phase distortion</span>
-              </li>
-              <li class="flex items-center gap-2">
-                <i data-lucide="check" class="w-4 h-4 text-emerald-400 shrink-0"></i>
-                <span>Stereo Widener expands headphone spatial separation</span>
-              </li>
-              <li class="flex items-center gap-2">
                 <i data-lucide="check" class="w-4 h-4 text-emerald-400 shrink-0"></i>
                 <span>Automix crossfade with beat matching and silence trimming</span>
               </li>
@@ -544,7 +521,7 @@
     </section>
 
     <!-- Cryptographic Verification & Security -->
-    <section id="verify" class="py-20 sm:py-28 md:py-32 border-b border-white/5 bg-[#05060b] relative">
+    <section id="verify" class="py-20 sm:py-28 md:py-32 border-b border-white/5 relative">
       <div class="max-w-[1440px] mx-auto px-6 sm:px-10 lg:px-16">
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 sm:gap-16 items-center">
@@ -570,13 +547,13 @@
               <span class="text-[11px] text-slate-500">Android Keystore</span>
             </div>
 
-            <div class="p-3.5 rounded-xl bg-black border border-white/10 text-emerald-400 select-all break-all text-[11px] leading-relaxed shadow-inner font-mono">
+            <div class="p-3.5 rounded-xl bg-black/60 backdrop-blur-md border border-white/10 text-emerald-400 select-all break-all text-[11px] leading-relaxed shadow-inner font-mono">
               717C073360660DAEE10ED18DB94E05E3BC33E026A25709D5BDDD468A014A6C44
             </div>
 
             <div class="space-y-1.5">
               <span class="text-slate-500 text-[10px] uppercase">Verify via Terminal</span>
-              <div class="p-3.5 rounded-xl bg-black border border-white/10 text-slate-300 select-all overflow-x-auto text-[11px] shadow-inner font-mono">
+              <div class="p-3.5 rounded-xl bg-black/60 backdrop-blur-md border border-white/10 text-slate-300 select-all overflow-x-auto text-[11px] shadow-inner font-mono">
                 apksigner verify --print-certs FAIRY-MUSIC-v1.0.10.apk
               </div>
             </div>
@@ -746,7 +723,7 @@
   </main>
 
   <!-- Clean Developer Footer -->
-  <footer class="border-t border-white/10 bg-[#020306] py-16 sm:py-20 text-xs text-slate-400 relative z-10">
+  <footer class="border-t border-white/10 bg-[#020306]/75 backdrop-blur-xl py-16 sm:py-20 text-xs text-slate-400 relative z-10">
     <div class="max-w-[1440px] mx-auto px-6 sm:px-10 lg:px-16">
 
       <div class="flex flex-col md:flex-row items-center justify-between gap-6 pb-10 border-b border-white/5 text-center md:text-left">
@@ -792,7 +769,7 @@
     <span id="toast-msg">Copied to clipboard!</span>
   </div>
 
-  <!-- JavaScript Engine (Cache-Busted v2.2.0) -->
-  <script src="js/app.js?v=2.2.0"></script>
+  <!-- JavaScript Engine (Cache-Busted v2.4.0) -->
+  <script src="js/app.js?v=2.4.0"></script>
 </body>
 </html>
