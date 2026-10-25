@@ -109,8 +109,8 @@ h1, h2, h3, h4, .font-heading {
   height: auto !important;
   transform: translate(-50%, -50%) !important;
   object-fit: cover !important;
-  opacity: 0.36 !important;
-  filter: contrast(1.15) brightness(0.85) saturate(1.25) !important;
+  opacity: 0.52 !important;
+  filter: contrast(1.18) brightness(0.92) saturate(1.25) !important;
   transition: opacity 0.5s ease;
 }
 
@@ -118,8 +118,8 @@ h1, h2, h3, h4, .font-heading {
   position: absolute !important;
   inset: 0 !important;
   background:
-    radial-gradient(ellipse at 50% 30%, rgba(2, 3, 6, 0.4) 0%, rgba(2, 3, 6, 0.75) 65%, #020306 100%),
-    linear-gradient(180deg, rgba(2, 3, 6, 0.35) 0%, rgba(2, 3, 6, 0.72) 50%, rgba(2, 3, 6, 0.96) 100%) !important;
+    radial-gradient(ellipse at 50% 30%, rgba(2, 3, 6, 0.25) 0%, rgba(2, 3, 6, 0.62) 65%, #020306 100%),
+    linear-gradient(180deg, rgba(2, 3, 6, 0.22) 0%, rgba(2, 3, 6, 0.58) 50%, rgba(2, 3, 6, 0.92) 100%) !important;
   pointer-events: none !important;
 }
 
