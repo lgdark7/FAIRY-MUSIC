@@ -48,8 +48,8 @@
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
-  <!-- Custom Stylesheet (Cache-Busted v2.4.0) -->
-  <link rel="stylesheet" href="css/style.css?v=2.4.0">
+  <!-- Custom Stylesheet (Cache-Busted v2.5.0) -->
+  <link rel="stylesheet" href="css/style.css?v=2.5.0">
 </head>
 
 <body class="bg-[#020306] text-slate-200 min-h-screen antialiased selection:bg-white selection:text-black flex flex-col justify-between relative overflow-x-hidden">
@@ -71,8 +71,8 @@
     <span id="bg-audio-label">Sound Muted</span>
   </button>
 
-  <!-- Main Navigation Header -->
-  <header class="sticky top-0 z-40 w-full backdrop-blur-xl bg-[#020306]/85 border-b border-white/10">
+  <!-- Main Navigation Header (Transparent Glass) -->
+  <header class="sticky top-0 z-40 w-full backdrop-blur-md bg-[#020306]/20 border-b border-white/10 transition-colors">
     <div class="max-w-[1440px] mx-auto px-6 sm:px-10 lg:px-16 h-16 sm:h-20 py-4 flex items-center justify-between">
 
       <!-- Brand Logo & Title -->
@@ -113,7 +113,7 @@
     </div>
 
     <!-- Mobile Dropdown Menu -->
-    <div id="mobile-menu" class="hidden md:hidden px-6 pt-4 pb-7 bg-[#0a0c14]/95 backdrop-blur-2xl border-b border-white/10 space-y-3">
+    <div id="mobile-menu" class="hidden md:hidden px-6 pt-4 pb-7 bg-[#020306]/85 backdrop-blur-2xl border-b border-white/10 space-y-3">
       <a href="#features" class="block py-2.5 px-3 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-white/5 transition-colors">Features</a>
       <a href="#preview" class="block py-2.5 px-3 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-white/5 transition-colors">App Preview</a>
       <a href="#equalizer" class="block py-2.5 px-3 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-white/5 transition-colors">Equalizer DSP</a>
@@ -219,7 +219,7 @@
           <div id="preview" class="lg:col-span-5 flex flex-col items-center pt-6 lg:pt-0">
 
             <!-- Clean Segmented Tabs (Matches Phone Frame Width without Overflow or Clipping) -->
-            <div class="w-full max-w-[290px] sm:max-w-[340px] p-1 bg-[#0c0e16]/95 border border-white/10 rounded-2xl flex items-center justify-between mb-4 shadow-2xl backdrop-blur-md">
+            <div class="w-full max-w-[290px] sm:max-w-[340px] p-1 bg-black/60 border border-white/10 rounded-2xl flex items-center justify-between mb-4 shadow-2xl backdrop-blur-md">
               <button class="screen-tab-btn active" data-screen="player">Player</button>
               <button class="screen-tab-btn" data-screen="lyrics">Lyrics</button>
               <button class="screen-tab-btn" data-screen="together">Together</button>
@@ -457,7 +457,7 @@
         <div class="overflow-x-auto rounded-2xl border border-white/10 shadow-2xl">
           <table class="w-full text-left border-collapse backdrop-blur-md min-w-[620px]">
             <thead>
-              <tr class="bg-[#0a0c14] border-b border-white/10 text-xs font-mono uppercase text-slate-400">
+              <tr class="bg-white/5 border-b border-white/10 text-xs font-mono uppercase text-slate-400">
                 <th class="p-5 sm:p-6">Feature</th>
                 <th class="p-5 sm:p-6 text-white font-bold bg-white/5 border-x border-white/10">Fairy Music</th>
                 <th class="p-5 sm:p-6">Spotify Free</th>
@@ -723,7 +723,7 @@
   </main>
 
   <!-- Clean Developer Footer -->
-  <footer class="border-t border-white/10 bg-[#020306]/75 backdrop-blur-xl py-16 sm:py-20 text-xs text-slate-400 relative z-10">
+  <footer class="border-t border-white/10 bg-[#020306]/20 backdrop-blur-md py-16 sm:py-20 text-xs text-slate-400 relative z-10">
     <div class="max-w-[1440px] mx-auto px-6 sm:px-10 lg:px-16">
 
       <div class="flex flex-col md:flex-row items-center justify-between gap-6 pb-10 border-b border-white/5 text-center md:text-left">
@@ -769,7 +769,7 @@
     <span id="toast-msg">Copied to clipboard!</span>
   </div>
 
-  <!-- JavaScript Engine (Cache-Busted v2.4.0) -->
-  <script src="js/app.js?v=2.4.0"></script>
+  <!-- JavaScript Engine (Cache-Busted v2.5.0) -->
+  <script src="js/app.js?v=2.5.0"></script>
 </body>
 </html>
