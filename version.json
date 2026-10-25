@@ -1,20 +1,26 @@
 {
-  "version": "1.0.10",
-  "versionCode": 11,
-  "releaseDate": "October 10, 2026",
+  "version": "1.0.11",
+  "versionCode": 12,
+  "releaseDate": "October 25, 2026",
   "size": "71 MB",
-  "apkUrl": "https://github.com/lgdark7/FAIRY-MUSIC/releases/download/v1.0.10/FAIRY-MUSIC-v1.0.10.apk",
+  "apkUrl": "https://github.com/lgdark7/FAIRY-MUSIC/releases/download/v1.0.11/FAIRY-MUSIC-v1.0.11.apk",
   "imageUrl": "https://raw.githubusercontent.com/lgdark7/FAIRY-MUSIC/main/assets/Fairy-Music.png",
-  "description": "Fairy Music v1.0.10: Listen Together Room Sync, Anti-Drift Math & Playback Improvements.",
+  "description": "Fairy Music v1.0.11: Official Website Integration, In-App Portal Access & Enhanced Performance.",
   "changelog": [
     {
-      "title": "Listen Together Synchronisation Fixes",
+      "title": "Official Website & In-App Portal Integration",
       "items": [
-        "Fixed multi-track desync after ~3 songs: Dynamic radio recommendations and queue updates now append seamlessly without resetting playback",
-        "Eliminated sudden 75% track backward seek: Guest now validates remote track IDs before applying drift adjustments, preventing accidental backward jumps",
-        "Fixed auto-pause before song playback: Ensured active playback state broadcast upon track changes and buffer completion",
-        "Enhanced room reconnect & recreation: Robust 3-tier metadata fallback and complete state cache teardown on room disconnect"
+        "Added official website link (fairymusic.vercel.app) to Settings, About Screen, and Welcome dialog",
+        "Direct one-tap in-app access to web release portal, real-time changelogs, and community updates",
+        "Performance optimizations and playback stability improvements",
+        "Seamless in-place upgrade compatible with all previous versions with zero data loss"
       ]
     }
-  ]
+  ],
+  "announcement": {
+    "id": "fairy-website-update-v1011",
+    "title": "Fairy Music v1.0.11 & Official Website Live! 🌟",
+    "message": "Fairy Music v1.0.11 is now live with official website portal integration! Visit fairymusic.vercel.app or update directly.",
+    "imageUrl": "https://raw.githubusercontent.com/lgdark7/FAIRY-MUSIC/main/assets/Fairy-Music.png"
+  }
 }
