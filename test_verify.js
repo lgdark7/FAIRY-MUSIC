@@ -11,6 +11,7 @@ const files = [
   'assets/Fairy-Music.png',
   'assets/download.png',
   'assets/obtainium.png',
+  'assets/bg-video.mp4',
   'server.js'
 ];
 
@@ -66,7 +67,8 @@ function runHttpTests() {
     { url: '/version.json', mime: 'application/json; charset=UTF-8' },
     { url: '/assets/Fairy-Music.png', mime: 'image/png' },
     { url: '/assets/download.png', mime: 'image/png' },
-    { url: '/assets/obtainium.png', mime: 'image/png' }
+    { url: '/assets/obtainium.png', mime: 'image/png' },
+    { url: '/assets/bg-video.mp4', mime: 'video/mp4' }
   ];
 
   let completed = 0;

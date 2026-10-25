@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupFaqAccordion();
   setupMobileMenu();
   setupCardSpotlight();
+  setupBackgroundVideo();
 });
 
 /* ==========================================================================
@@ -601,5 +602,47 @@ function setupMobileMenu() {
     if (!menu.contains(e.target) && !btn.contains(e.target)) {
       menu.classList.add('hidden');
     }
+  });
+}
+
+/* ==========================================================================
+   9. Ambient Video Background & Audio Controls
+   ========================================================================== */
+
+function setupBackgroundVideo() {
+  const video = document.getElementById('bg-video');
+  const toggleBtn = document.getElementById('bg-audio-toggle');
+  if (!video || !toggleBtn) return;
+
+  // Guarantee seamless background video autoplay
+  video.muted = true;
+  const playPromise = video.play();
+  if (playPromise !== undefined) {
+    playPromise.catch(() => {
+      document.body.addEventListener('click', () => {
+        if (video.paused) video.play();
+      }, { once: true });
+    });
+  }
+
+  // Toggle ambient audio on user click
+  toggleBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (video.muted) {
+      video.muted = false;
+      video.volume = 0.6;
+      if (video.paused) video.play();
+      toggleBtn.innerHTML = `
+        <i data-lucide="volume-2" class="w-3.5 h-3.5 text-cyan-400"></i>
+        <span>Sound Active</span>
+      `;
+    } else {
+      video.muted = true;
+      toggleBtn.innerHTML = `
+        <i data-lucide="volume-x" class="w-3.5 h-3.5 text-slate-300"></i>
+        <span>Sound Muted</span>
+      `;
+    }
+    if (window.lucide) window.lucide.createIcons();
   });
 }

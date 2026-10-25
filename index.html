@@ -54,8 +54,22 @@
 
 <body class="bg-[#020306] text-slate-200 min-h-screen antialiased selection:bg-white selection:text-black flex flex-col justify-between relative overflow-x-hidden">
 
+  <!-- Ambient Video Background (Horizontal Obito / Cosmic Dimension) -->
+  <div class="ambient-video-bg">
+    <video id="bg-video" class="ambient-video-element" autoplay muted loop playsinline preload="auto">
+      <source src="assets/bg-video.mp4" type="video/mp4">
+    </video>
+    <div class="ambient-video-overlay"></div>
+  </div>
+
   <!-- Subtle Starlight & Meteor Particle Canvas -->
   <canvas id="starfield-canvas"></canvas>
+
+  <!-- Ambient Audio Toggle Pill -->
+  <button id="bg-audio-toggle" class="ambient-audio-toggle" aria-label="Toggle Background Audio">
+    <i data-lucide="volume-x" class="w-3.5 h-3.5 text-slate-300"></i>
+    <span id="bg-audio-label">Sound Muted</span>
+  </button>
 
   <!-- Main Navigation Header -->
   <header class="sticky top-0 z-40 w-full backdrop-blur-xl bg-[#020306]/85 border-b border-white/10">

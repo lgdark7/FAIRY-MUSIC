@@ -86,6 +86,43 @@ h1, h2, h3, h4, .font-heading {
   scrollbar-width: none;
 }
 
+/* Ambient Cinematic Video Background */
+.ambient-video-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+  background-color: var(--bg-void);
+}
+
+.ambient-video-element {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  min-width: 100%;
+  min-height: 100%;
+  width: auto;
+  height: auto;
+  transform: translate(-50%, -50%);
+  object-fit: cover;
+  opacity: 0.36;
+  filter: contrast(1.15) brightness(0.85) saturate(1.25);
+  transition: opacity 0.5s ease;
+}
+
+.ambient-video-overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 50% 30%, rgba(2, 3, 6, 0.4) 0%, rgba(2, 3, 6, 0.75) 65%, #020306 100%),
+    linear-gradient(180deg, rgba(2, 3, 6, 0.35) 0%, rgba(2, 3, 6, 0.72) 50%, rgba(2, 3, 6, 0.96) 100%);
+  pointer-events: none;
+}
+
 /* Subtle Realistic Starlight & Meteor Canvas */
 #starfield-canvas {
   position: fixed;
@@ -94,7 +131,43 @@ h1, h2, h3, h4, .font-heading {
   width: 100vw;
   height: 100vh;
   pointer-events: none;
-  z-index: 0;
+  z-index: 1;
+}
+
+/* Audio Control Floating Pill */
+.ambient-audio-toggle {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  z-index: 45;
+  background: rgba(12, 14, 20, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--star-silver);
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 1px 1px rgba(255, 255, 255, 0.08);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ambient-audio-toggle:hover {
+  background: rgba(22, 26, 38, 0.95);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.9), 0 0 15px rgba(255, 255, 255, 0.1);
+}
+
+.ambient-audio-toggle:active {
+  transform: translateY(0) scale(0.96);
 }
 
 /* Concentric Vinyl Orbit Rings Background (Echoes the Cat Logo Vinyl Grooves) */
